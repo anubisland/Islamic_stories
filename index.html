@@ -466,34 +466,33 @@ function narrationFor(i){
 }
 
 // ---------- navigation ----------
-let isAnimating = false;
-function show(i, instant){
-  // cancel any in-flight utterance for the slide we're leaving, but do NOT
-  // turn off autoPlay mode itself — that persists across slide changes
-  if ('speechSynthesis' in window) speechSynthesis.cancel();
-  speaking = false;
-
+// show() is PURELY visual — it must never touch speechSynthesis, because it
+// is also called from inside an utterance's own onstart handler (to sync the
+// visible slide to whichever narration is currently playing), and cancelling
+// speech from inside its own onstart would immediately kill that utterance.
+function show(i){
   const wrap = document.createElement('div');
   wrap.className = 'slide';
   wrap.innerHTML = renderSlide(i);
   stage.innerHTML = '';
   stage.appendChild(wrap);
-  // force reflow then activate, for a gentle fade/slide-in
   requestAnimationFrame(() => {
     requestAnimationFrame(() => wrap.classList.add('active'));
   });
   updateChrome();
-  // NOTE: auto-advance narration is NOT triggered here. Mobile browsers
-  // (iOS Safari especially) silently block speechSynthesis.speak() when it
-  // is invoked from a setTimeout/async callback instead of synchronously
-  // within a user gesture or a chained speech-end event. speakSlide() is
-  // instead called directly and synchronously from the previous utterance's
-  // onend handler (see speakSlide below) to preserve that activation chain.
 }
 
 function goTo(i){
   current = ((i % SLIDES.length) + SLIDES.length) % SLIDES.length;
   show(current);
+  if (autoPlay){
+    // user navigated manually mid-narration: rebuild the queue from the new
+    // position. This call happens synchronously inside the same touch/click
+    // handler that triggered goTo(), so it still counts as user-initiated.
+    queueNarrationFrom(current);
+  } else if ('speechSynthesis' in window){
+    speechSynthesis.cancel();
+  }
 }
 function nextSlide(){ goTo(current+1); }
 function prevSlide(){ goTo(current-1); }
@@ -521,8 +520,20 @@ document.addEventListener('keydown', e=>{
 });
 
 // ---------- text-to-speech: continuous auto-advancing narration ----------
+// Mobile browsers (iOS Safari in particular) silently refuse to play any
+// speechSynthesis utterance that wasn't triggered synchronously within a
+// trusted user gesture — even calling speak() from inside a *previous*
+// utterance's onend handler can still be rejected on real devices. The
+// robust, widely-documented workaround is to queue ALL the utterances we'll
+// need at once, synchronously, inside the single click/tap that starts
+// playback. The browser's native speech queue then plays them back-to-back
+// entirely on its own — no further speak() calls are ever needed, so there
+// is nothing left for the platform to "block".
 let voicesCache = null;
-let autoPlay = false;        // true while continuous narration mode is active
+let autoPlay = false;     // true while continuous narration mode is active
+let playGeneration = 0;   // bumped every time the queue is (re)built, so any
+                           // callback from a since-replaced queue can detect
+                           // it is stale and safely do nothing
 function pickArabicVoice(){
   if (!('speechSynthesis' in window)) return null;
   const voices = speechSynthesis.getVoices();
@@ -545,44 +556,49 @@ function updateSpeakUI(){
 
 function stopAutoPlay(){
   autoPlay = false;
+  playGeneration++; // invalidate any in-flight queue callbacks
   if ('speechSynthesis' in window) speechSynthesis.cancel();
   speaking = false;
   updateSpeakUI();
 }
 
-// speaks the CURRENT slide; if autoPlay is on, automatically advances to the
-// next slide and keeps narrating once this utterance finishes
-function speakSlide(){
+// Builds and queues utterances for every slide from startIndex through the
+// end of the story, all in one synchronous pass. Must only ever be called
+// directly inside a user gesture (button click / touch handler).
+function queueNarrationFrom(startIndex){
   if (!('speechSynthesis' in window)) return;
-  const slideAtStart = current; // tag this utterance to the slide it narrates
-  const text = narrationFor(current);
-  const utter = new SpeechSynthesisUtterance(text);
-  const v = voicesCache || pickArabicVoice();
-  if (v) utter.voice = v;
-  utter.lang = v ? v.lang : 'ar-SA';
-  utter.rate = 0.9;
-  utter.pitch = 1.05;
-  utter.onend = () => {
-    speaking = false;
-    if (!autoPlay) return;
-    if (current !== slideAtStart) return; // a stale/cancelled utterance — user already moved on
-    if (current < SLIDES.length - 1){
-      goTo(current + 1);
-      speakSlide(); // called synchronously here (not via setTimeout) so mobile
-                     // browsers keep treating this as a continuation of the
-                     // same speech session rather than a blocked auto-play
-    } else {
-      stopAutoPlay(); // reached the last slide — finish gracefully
-    }
-  };
-  utter.onerror = () => {
-    speaking = false;
-    if (autoPlay && current === slideAtStart) stopAutoPlay();
-  };
   speechSynthesis.cancel();
-  speechSynthesis.speak(utter);
-  speaking = true;
-  updateSpeakUI();
+  playGeneration++;
+  const myGen = playGeneration;
+  const v = voicesCache || pickArabicVoice();
+
+  for (let idx = startIndex; idx < SLIDES.length; idx++){
+    const utter = new SpeechSynthesisUtterance(narrationFor(idx));
+    if (v) utter.voice = v;
+    utter.lang = v ? v.lang : 'ar-SA';
+    utter.rate = 0.9;
+    utter.pitch = 1.05;
+
+    utter.onstart = () => {
+      if (myGen !== playGeneration) return; // belongs to a replaced queue
+      speaking = true;
+      if (current !== idx){ current = idx; show(current); }
+      updateSpeakUI();
+    };
+    utter.onerror = () => {
+      if (myGen !== playGeneration) return;
+      speaking = false;
+      stopAutoPlay();
+    };
+    if (idx === SLIDES.length - 1){
+      utter.onend = () => {
+        if (myGen !== playGeneration) return;
+        speaking = false;
+        stopAutoPlay(); // reached the end of the story — finish gracefully
+      };
+    }
+    speechSynthesis.speak(utter);
+  }
 }
 
 function toggleSpeak(){
@@ -595,7 +611,7 @@ function toggleSpeak(){
   } else {
     autoPlay = true;
     updateSpeakUI();
-    speakSlide();
+    queueNarrationFrom(current); // synchronous, inside this click handler
   }
 }
 

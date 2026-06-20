@@ -483,12 +483,12 @@ function show(i, instant){
     requestAnimationFrame(() => wrap.classList.add('active'));
   });
   updateChrome();
-
-  if (autoPlay){
-    // small delay so narration starts after the transition settles
-    clearTimeout(autoPlayTimer);
-    autoPlayTimer = setTimeout(() => { if (autoPlay) speakSlide(); }, 420);
-  }
+  // NOTE: auto-advance narration is NOT triggered here. Mobile browsers
+  // (iOS Safari especially) silently block speechSynthesis.speak() when it
+  // is invoked from a setTimeout/async callback instead of synchronously
+  // within a user gesture or a chained speech-end event. speakSlide() is
+  // instead called directly and synchronously from the previous utterance's
+  // onend handler (see speakSlide below) to preserve that activation chain.
 }
 
 function goTo(i){
@@ -523,7 +523,6 @@ document.addEventListener('keydown', e=>{
 // ---------- text-to-speech: continuous auto-advancing narration ----------
 let voicesCache = null;
 let autoPlay = false;        // true while continuous narration mode is active
-let autoPlayTimer = null;
 function pickArabicVoice(){
   if (!('speechSynthesis' in window)) return null;
   const voices = speechSynthesis.getVoices();
@@ -546,7 +545,6 @@ function updateSpeakUI(){
 
 function stopAutoPlay(){
   autoPlay = false;
-  clearTimeout(autoPlayTimer);
   if ('speechSynthesis' in window) speechSynthesis.cancel();
   speaking = false;
   updateSpeakUI();
@@ -569,7 +567,10 @@ function speakSlide(){
     if (!autoPlay) return;
     if (current !== slideAtStart) return; // a stale/cancelled utterance — user already moved on
     if (current < SLIDES.length - 1){
-      goTo(current + 1); // show() will pick up autoPlay and call speakSlide again
+      goTo(current + 1);
+      speakSlide(); // called synchronously here (not via setTimeout) so mobile
+                     // browsers keep treating this as a continuation of the
+                     // same speech session rather than a blocked auto-play
     } else {
       stopAutoPlay(); // reached the last slide — finish gracefully
     }

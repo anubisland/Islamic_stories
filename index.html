@@ -468,7 +468,11 @@ function narrationFor(i){
 // ---------- navigation ----------
 let isAnimating = false;
 function show(i, instant){
-  stopSpeaking();
+  // cancel any in-flight utterance for the slide we're leaving, but do NOT
+  // turn off autoPlay mode itself — that persists across slide changes
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  speaking = false;
+
   const wrap = document.createElement('div');
   wrap.className = 'slide';
   wrap.innerHTML = renderSlide(i);
@@ -479,6 +483,12 @@ function show(i, instant){
     requestAnimationFrame(() => wrap.classList.add('active'));
   });
   updateChrome();
+
+  if (autoPlay){
+    // small delay so narration starts after the transition settles
+    clearTimeout(autoPlayTimer);
+    autoPlayTimer = setTimeout(() => { if (autoPlay) speakSlide(); }, 420);
+  }
 }
 
 function goTo(i){
@@ -510,8 +520,10 @@ document.addEventListener('keydown', e=>{
   else if (e.key === 'ArrowLeft') prevSlide();
 });
 
-// ---------- text-to-speech ----------
+// ---------- text-to-speech: continuous auto-advancing narration ----------
 let voicesCache = null;
+let autoPlay = false;        // true while continuous narration mode is active
+let autoPlayTimer = null;
 function pickArabicVoice(){
   if (!('speechSynthesis' in window)) return null;
   const voices = speechSynthesis.getVoices();
@@ -522,19 +534,29 @@ if ('speechSynthesis' in window){
   speechSynthesis.onvoiceschanged = () => { voicesCache = pickArabicVoice(); };
 }
 
-function stopSpeaking(){
-  if ('speechSynthesis' in window) speechSynthesis.cancel();
-  speaking = false;
-  speakBtn.classList.remove('speaking');
-  speakLabel.textContent = 'استمع';
+function updateSpeakUI(){
+  if (autoPlay){
+    speakBtn.classList.add('speaking');
+    speakLabel.textContent = 'إيقاف';
+  } else {
+    speakBtn.classList.remove('speaking');
+    speakLabel.textContent = 'استمع';
+  }
 }
 
-function toggleSpeak(){
-  if (!('speechSynthesis' in window)){
-    alert('عذراً، هذا المتصفح لا يدعم القراءة الصوتية.');
-    return;
-  }
-  if (speaking){ stopSpeaking(); return; }
+function stopAutoPlay(){
+  autoPlay = false;
+  clearTimeout(autoPlayTimer);
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  speaking = false;
+  updateSpeakUI();
+}
+
+// speaks the CURRENT slide; if autoPlay is on, automatically advances to the
+// next slide and keeps narrating once this utterance finishes
+function speakSlide(){
+  if (!('speechSynthesis' in window)) return;
+  const slideAtStart = current; // tag this utterance to the slide it narrates
   const text = narrationFor(current);
   const utter = new SpeechSynthesisUtterance(text);
   const v = voicesCache || pickArabicVoice();
@@ -542,13 +564,38 @@ function toggleSpeak(){
   utter.lang = v ? v.lang : 'ar-SA';
   utter.rate = 0.9;
   utter.pitch = 1.05;
-  utter.onend = stopSpeaking;
-  utter.onerror = stopSpeaking;
+  utter.onend = () => {
+    speaking = false;
+    if (!autoPlay) return;
+    if (current !== slideAtStart) return; // a stale/cancelled utterance — user already moved on
+    if (current < SLIDES.length - 1){
+      goTo(current + 1); // show() will pick up autoPlay and call speakSlide again
+    } else {
+      stopAutoPlay(); // reached the last slide — finish gracefully
+    }
+  };
+  utter.onerror = () => {
+    speaking = false;
+    if (autoPlay && current === slideAtStart) stopAutoPlay();
+  };
   speechSynthesis.cancel();
   speechSynthesis.speak(utter);
   speaking = true;
-  speakBtn.classList.add('speaking');
-  speakLabel.textContent = 'إيقاف';
+  updateSpeakUI();
+}
+
+function toggleSpeak(){
+  if (!('speechSynthesis' in window)){
+    alert('عذراً، هذا المتصفح لا يدعم القراءة الصوتية.');
+    return;
+  }
+  if (autoPlay){
+    stopAutoPlay();
+  } else {
+    autoPlay = true;
+    updateSpeakUI();
+    speakSlide();
+  }
 }
 
 // ---------- init ----------

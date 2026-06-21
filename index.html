@@ -309,51 +309,6 @@
   @media (min-width:520px){
     .scene-wrap{ padding:14px 40px 18px; gap:14px; }
   }
-
-  /* ---------- diagnostics ---------- */
-  #diag-trigger{
-    text-align:center; color:rgba(232,193,88,.55);
-    font-size:11px; padding:2px 0 6px; cursor:pointer;
-    flex-shrink:0;
-  }
-  #diag-overlay{
-    display:none; position:fixed; inset:0; z-index:100;
-    background:rgba(8,11,28,.92);
-    align-items:center; justify-content:center;
-    padding:20px;
-  }
-  #diag-overlay.open{ display:flex; }
-  #diag-box{
-    width:100%; max-width:420px; max-height:85vh; overflow-y:auto;
-    background:var(--cream); border-radius:16px;
-    border:1.5px solid var(--gold);
-    padding:0 0 16px;
-  }
-  #diag-header{
-    display:flex; justify-content:space-between; align-items:center;
-    background:var(--gold); color:var(--ink); font-weight:800;
-    padding:12px 16px; border-radius:14px 14px 0 0; font-size:16px;
-  }
-  #diag-close{ cursor:pointer; font-size:18px; }
-  #diag-body{
-    padding:14px 16px; font-size:13px; color:var(--ink-med);
-    direction:rtl; text-align:right; line-height:1.8;
-  }
-  #diag-body .row{ display:flex; justify-content:space-between; border-bottom:1px solid rgba(0,0,0,.08); padding:5px 0; }
-  #diag-body .label{ font-weight:700; color:var(--ink); }
-  #diag-body .val{ direction:ltr; text-align:left; font-family:monospace; font-size:12px; max-width:60%; overflow-wrap:break-word; }
-  #diag-body .ok{ color:#1A7A2E; font-weight:800; }
-  #diag-body .bad{ color:#B3261E; font-weight:800; }
-  #diag-test-btn{
-    display:block; margin:10px 16px 0; width:calc(100% - 32px);
-    background:var(--ink); color:var(--cream); border:none; border-radius:10px;
-    padding:12px; font-family:'Cairo',Tahoma,sans-serif; font-weight:700; font-size:14px; cursor:pointer;
-  }
-  #diag-result{
-    margin:10px 16px 0; padding:10px; border-radius:10px;
-    background:rgba(0,0,0,.05); font-size:12.5px; color:var(--ink-med);
-    direction:rtl; text-align:right; white-space:pre-wrap; min-height:20px;
-  }
 </style>
 </head>
 <body>
@@ -374,20 +329,6 @@
       <span id="speak-label">استمع</span>
     </button>
     <button class="nav-btn" id="left-btn" onclick="prevSlide()">◀</button>
-  </div>
-
-  <div id="diag-trigger" onclick="openDiagnostics()">تشخيص مشكلة الصوت 🔧</div>
-
-  <div id="diag-overlay">
-    <div id="diag-box">
-      <div id="diag-header">
-        <span>تشخيص الصوت</span>
-        <span id="diag-close" onclick="closeDiagnostics()">✕</span>
-      </div>
-      <div id="diag-body"></div>
-      <button id="diag-test-btn" onclick="runDiagnosticSpeak()">🔊 اختبار تشغيل صوت الآن</button>
-      <div id="diag-result"></div>
-    </div>
   </div>
 </div>
 
@@ -672,90 +613,6 @@ function toggleSpeak(){
     updateSpeakUI();
     queueNarrationFrom(current); // synchronous, inside this click handler
   }
-}
-
-// ---------- diagnostics ----------
-function gatherDiagInfo(){
-  const hasSpeech = 'speechSynthesis' in window;
-  const voices = hasSpeech ? speechSynthesis.getVoices() : [];
-  const arVoices = voices.filter(v => /^ar/i.test(v.lang));
-  return {
-    ua: navigator.userAgent,
-    protocol: location.protocol,
-    online: navigator.onLine,
-    hasSpeech,
-    voiceCount: voices.length,
-    arVoiceCount: arVoices.length,
-    arVoiceNames: arVoices.map(v => v.name + ' (' + v.lang + ')'),
-    allLangsSample: [...new Set(voices.map(v => v.lang))].slice(0, 12),
-  };
-}
-
-function renderDiagBody(){
-  const d = gatherDiagInfo();
-  const body = document.getElementById('diag-body');
-  const yn = (b) => b ? '<span class="ok">نعم ✓</span>' : '<span class="bad">لا ✕</span>';
-  body.innerHTML = `
-    <div class="row"><span class="label">يدعم الجهاز تقنية النطق؟</span><span class="val">${yn(d.hasSpeech)}</span></div>
-    <div class="row"><span class="label">عدد الأصوات المتاحة بالنظام</span><span class="val">${d.voiceCount}</span></div>
-    <div class="row"><span class="label">عدد الأصوات العربية</span><span class="val">${d.arVoiceCount > 0 ? '<span class="ok">'+d.arVoiceCount+'</span>' : '<span class="bad">0</span>'}</span></div>
-    ${d.arVoiceNames.length ? `<div class="row"><span class="label">أسماء الأصوات العربية</span><span class="val">${d.arVoiceNames.join('، ')}</span></div>` : ''}
-    <div class="row"><span class="label">عيّنة من اللغات المتاحة</span><span class="val">${d.allLangsSample.join(', ') || '(فارغة)'}</span></div>
-    <div class="row"><span class="label">بروتوكول الصفحة</span><span class="val">${d.protocol}</span></div>
-    <div class="row"><span class="label">متصل بالإنترنت الآن؟</span><span class="val">${yn(d.online)}</span></div>
-    <div class="row" style="border-bottom:none;"><span class="label">نوع المتصفح/الجهاز</span><span class="val" style="font-size:10px;">${d.ua}</span></div>
-  `;
-}
-
-function openDiagnostics(){
-  if (autoPlay) stopAutoPlay();
-  document.getElementById('diag-result').textContent = '';
-  renderDiagBody();
-  document.getElementById('diag-overlay').classList.add('open');
-  // voices sometimes populate asynchronously — refresh once they arrive
-  if ('speechSynthesis' in window){
-    speechSynthesis.onvoiceschanged = () => { voicesCache = pickArabicVoice(); renderDiagBody(); };
-  }
-}
-function closeDiagnostics(){
-  document.getElementById('diag-overlay').classList.remove('open');
-}
-
-function runDiagnosticSpeak(){
-  const resultEl = document.getElementById('diag-result');
-  if (!('speechSynthesis' in window)){
-    resultEl.innerHTML = '<span class="bad">المتصفح لا يحتوي على speechSynthesis إطلاقاً.</span>';
-    return;
-  }
-  resultEl.textContent = '⏳ جارٍ المحاولة...';
-  const t0 = Date.now();
-  const utter = new SpeechSynthesisUtterance('السلام عليكم، هذا اختبار صوت');
-  const voices = speechSynthesis.getVoices();
-  const arVoice = voices.find(v => /^ar/i.test(v.lang));
-  if (arVoice) utter.voice = arVoice;
-  utter.lang = arVoice ? arVoice.lang : 'ar-SA';
-
-  let started = false;
-  utter.onstart = () => {
-    started = true;
-    resultEl.innerHTML = `<span class="ok">✓ بدأ التشغيل فعلياً بعد ${Date.now()-t0} مللي ثانية.</span>\nإن كنت لا تسمع شيئاً الآن، فالمشكلة في صوت الجهاز/كتم الصوت وليست في التطبيق.`;
-  };
-  utter.onend = () => {
-    if (started){
-      resultEl.innerHTML += '\n<span class="ok">✓ انتهى التشغيل بنجاح بدون أخطاء.</span>';
-    }
-  };
-  utter.onerror = (e) => {
-    resultEl.innerHTML = `<span class="bad">✕ فشل التشغيل. رمز الخطأ: ${e.error}</span>\n(بعد ${Date.now()-t0} مللي ثانية من الضغط)`;
-  };
-  speechSynthesis.cancel();
-  speechSynthesis.speak(utter);
-
-  setTimeout(() => {
-    if (!started){
-      resultEl.innerHTML = `<span class="bad">✕ لم يبدأ أي صوت خلال 3 ثوانٍ.</span>\nspeaking=${speechSynthesis.speaking}, pending=${speechSynthesis.pending}\nهذا يدل غالباً على عدم تثبيت حزمة لغة عربية لتقنية تحويل النص لصوت على هذا الجهاز.`;
-    }
-  }, 3000);
 }
 
 // ---------- init ----------

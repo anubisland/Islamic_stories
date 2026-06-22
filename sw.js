@@ -4,8 +4,23 @@
 // back to the cached copy if the network is unavailable. This guarantees
 // that every update pushed to the site is picked up immediately on the next
 // load with internet access, while still preserving full offline support.
-const CACHE_NAME = "muadh-muawwidh-v2"; // bumped to invalidate any old stuck cache
-const ASSETS = ["./", "./index.html", "./manifest.json"];
+const CACHE_NAME = "sighar-sahaba-v4";
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./story1.html",
+  "./story2.html",
+  "./story3.html",
+  "./story4.html",
+  "./story5.html",
+  "./story6.html",
+  "./story7.html",
+  "./manifest.json",
+  "./scenes-svg.js",
+  "./icon-192.png",
+  "./icon-512.png",
+  "./icon-maskable-512.png"
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

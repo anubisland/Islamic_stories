@@ -53,12 +53,12 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--night); font
 .home-subtitle { color: var(--cream); font-size: clamp(13px, 3.2vw, 15px); margin: 4px 0 8px; opacity: .8; }
 
 /* cards */
-.cards-grid { display: flex; flex-direction: column; gap: 12px; max-width: 520px; margin: 0 auto; padding: 4px 0; }
+.cards-grid { display: flex; flex-direction: column; gap: 10px; max-width: 520px; margin: 0 auto; padding: 4px 0; }
 
 .character-card {
-  display: flex; align-items: center; gap: 14px;
-  border: 1.5px solid rgba(212,175,55,.25);
-  border-radius: 20px; padding: 12px 14px;
+  display: flex; align-items: center; gap: 12px;
+  border: 1.5px solid rgba(212,175,55,.3);
+  border-radius: 18px; padding: 10px 12px;
   cursor: pointer;
   transition: transform .2s, border-color .2s, box-shadow .25s;
   box-shadow: 0 4px 14px rgba(0,0,0,.25);
@@ -78,15 +78,15 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--night); font
 }
 
 .card-icon-wrap {
-  flex-shrink: 0; width: 68px; height: 68px;
-  border-radius: 16px;
+  flex-shrink: 0; width: 60px; height: 60px;
+  border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 34px; position: relative; z-index: 1;
+  font-size: 30px; position: relative; z-index: 1;
   box-shadow: 0 4px 12px rgba(0,0,0,.2);
 }
-.card-info { flex: 1; min-width: 0; position: relative; z-index: 1; }
-.card-name { color: #fff; font-weight: 800; font-size: clamp(16px, 4.2vw, 20px); line-height: 1.2; }
-.card-name .en { display: block; font-family: 'Lora', serif; font-style: italic; font-weight: 400; color: var(--gold-light); font-size: clamp(12px, 3vw, 14px); margin-top: 1px; }
+.card-info { flex: 1; min-width: 0; overflow: hidden; position: relative; z-index: 1; }
+.card-name { color: #fff; font-weight: 800; font-size: clamp(14px, 3.6vw, 18px); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-name .en { display: block; font-family: 'Lora', serif; font-style: italic; font-weight: 400; color: var(--gold-light); font-size: clamp(11px, 2.6vw, 13px); margin-top: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-meta { display: flex; flex-wrap: wrap; gap: 4px 8px; margin-top: 4px; }
 .card-tag { display: inline-flex; align-items: center; gap: 3px; color: var(--cream); font-size: clamp(10.5px, 2.4vw, 12px); opacity: .7; background: rgba(255,255,255,.05); padding: 1px 8px; border-radius: 999px; }
 .card-tag span { font-family: 'Lora', serif; font-style: italic; }
@@ -174,7 +174,7 @@ const STORIES = [
   { id: 'ibn-abbas', icon: '📖', title: 'عبد الله بن عباس', titleEn: 'Abdullah ibn Abbas', age: '10-13 سنة', themeEn: 'Quran Scholar', url: './story7.html' },
 ];
 
-const CARD_BG = ['#1A2A1A','#1A1A2A','#2A1A1A','#1A2A2A','#2A2A1A','#1A1A3A','#2A1A2A'];
+const CARD_BG = ['#BC6C25','#D4A373','#E07A5F','#81B29A','#E9C46A','#F2CC8F','#F4A261'];
 
 const homeScreen = document.getElementById('home-screen');
 const cardsGrid = document.getElementById('cards-grid');

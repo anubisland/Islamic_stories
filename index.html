@@ -53,7 +53,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--night); font
 .home-subtitle { color: var(--cream); font-size: clamp(13px, 3.2vw, 15px); margin: 4px 0 8px; opacity: .8; }
 
 /* cards */
-.cards-grid { display: flex; flex-direction: column; gap: 10px; max-width: 520px; margin: 0 auto; padding: 4px 0; }
+.cards-grid { display: flex; flex-direction: column; gap: 10px; max-width: min(680px, 92vw); margin: 0 auto; padding: 4px 0; }
 
 .character-card {
   display: flex; align-items: center; gap: 12px;
@@ -119,9 +119,11 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--night); font
 #home-screen::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 999px; }
 
 @media (min-width: 600px) {
-  .cards-grid { flex-direction: row; flex-wrap: wrap; }
-  .character-card { flex: 1 1 calc(50% - 6px); min-width: 0; }
-  #home-screen { padding: 16px 24px 24px; }
+  #home-screen { padding: 24px 32px 32px; }
+  .character-card { padding: 16px 20px; gap: 16px; }
+  .card-icon-wrap { width: 68px; height: 68px; font-size: 34px; }
+  .card-name { font-size: clamp(16px, 2.2vw, 20px); }
+  .card-name .en { font-size: clamp(12px, 1.6vw, 14px); }
 }
 </style>
 </head>

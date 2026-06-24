@@ -4,7 +4,7 @@
 // back to the cached copy if the network is unavailable. This guarantees
 // that every update pushed to the site is picked up immediately on the next
 // load with internet access, while still preserving full offline support.
-const CACHE_NAME = "sighar-sahaba-v4";
+const CACHE_NAME = "sighar-sahaba-v5";
 const ASSETS = [
   "./",
   "./index.html",
@@ -15,6 +15,8 @@ const ASSETS = [
   "./story5.html",
   "./story6.html",
   "./story7.html",
+  "./story8.html",
+  "./story9.html",
   "./manifest.json",
   "./scenes-svg.js",
   "./icon-192.png",

@@ -79,6 +79,24 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--night); font
 .card-arrow { flex-shrink: 0; color: var(--gold); font-size: 18px; opacity: .4; position: relative; z-index: 1; }
 .card-coming { display: inline-block; background: rgba(212,175,55,.12); border: 1px solid var(--gold); color: var(--gold-light); font-size: 11px; padding: 1px 10px; border-radius: 999px; font-weight: 700; }
 
+/* intro overlay */
+#intro-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 100;
+  background: linear-gradient(180deg, #0D1B3E 0%, #1A2A4A 40%, #2D1B0E 100%);
+  flex-direction: column; align-items: center; justify-content: center;
+  padding: calc(24px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));
+  overflow-y: auto;
+}
+#intro-overlay.active { display: flex; }
+.intro-icon { font-size: clamp(52px, 14vw, 80px); margin-bottom: 8px; }
+.intro-scroll { width: 100%; max-width: 520px; overflow-y: auto; text-align: center; }
+.intro-title { font-weight: 800; color: #FFE4A0; font-size: clamp(22px, 5vw, 32px); line-height: 1.4; margin-bottom: 16px; }
+.intro-title .en { display: block; font-family: 'Lora', serif; font-style: italic; font-weight: 400; color: var(--gold-light); font-size: clamp(13px, 3vw, 17px); margin-top: 4px; }
+.intro-text { color: var(--cream); font-size: clamp(15px, 3.6vw, 19px); line-height: 1.7; margin-bottom: 20px; }
+.intro-text .en { display: block; font-family: 'Lora', serif; font-style: italic; color: rgba(255,228,160,.7); font-size: clamp(12px, 2.6vw, 15px); margin-top: 8px; }
+.intro-list { text-align: right; color: #FFD700; font-size: clamp(14px, 3.2vw, 17px); line-height: 1.9; font-weight: 600; max-width: 400px; margin: 0 auto 16px; }
+
 /* coming soon overlay */
 #coming-overlay {
   display: none;
@@ -131,6 +149,25 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--night); font
   </div>
 </div>
 
+<!-- INTRO OVERLAY -->
+<div id="intro-overlay">
+  <div class="intro-icon">🌟</div>
+  <div class="intro-scroll">
+    <div class="intro-title">سِلْسِلَةُ صِغَارِ الصَّحَابَةِ<br><span class="en">Little Companions Series</span></div>
+    <div class="intro-text">فِي عَهْدِ النَّبِيِّ ﷺ، كَانَ هُنَاكَ صِغَارٌ فِي السِّنِّ، عَمَالِقَةٌ فِي الْهِمَّةِ! هَذِهِ الْقِصَصُ الْمُشَوِّقَةُ تَرْوِي حَيَاةَ أَصْحَابِ النَّبِيِّ ﷺ الصِّغَارِ الَّذِينَ صَنَعُوا الْفَرْقَ فِي الْإِسْلَامِ.<br><span class="en">In the time of the Prophet ﷺ, there were young ones small in age but great in determination! These exciting stories tell the lives of the young Companions who made a difference in Islam.</span></div>
+    <div class="intro-list">⚔ معَاذٌ وَمُعَوِّذٌ — أَوَّلُ الشُّهَدَاءِ فِي الْإِسْلَامِ<br>
+🏹 أُسَامَةُ بْنُ زَيْدٍ — أَمِيرُ الشَّبَانِ<br>
+🤲 عُمَيْرُ بْنُ أَبِي وَقَّاصٍ — شَوْقُ الْجِهَادِ<br>
+💪 رَافِعٌ وَسَمُرَةُ — الْمُصَارِعَانِ الْبَطَلَانِ<br>
+✍ زَيْدُ بْنُ ثَابِتٍ — جَامِعُ الْقُرْآنِ<br>
+🌙 عَبْدُ اللَّهِ بْنُ عُمَرَ — صَاحِبُ اللَّيْلِ<br>
+📖 عَبْدُ اللَّهِ بْنُ عَبَّاسٍ — بَحْرُ الْعِلْمِ<br>
+🤲 أَنَسُ بْنُ مَالِكٍ — حَافِظُ السِّرِّ<br>
+🌿 الْحَسَنُ وَالْحُسَيْنُ — سَيِّدَا شَبَابِ أَهْلِ الْجَنَّةِ</div>
+  </div>
+  <button class="close-btn" onclick="closeComing()">عَرَفْتُ! ✨</button>
+</div>
+
 <!-- COMING SOON OVERLAY -->
 <div id="coming-overlay">
   <div class="icon">🏗️</div>
@@ -146,6 +183,7 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--night); font
 // Story 1 links to the external page (which handles its own design & TTS).
 // Other stories will be added later.
 const STORIES = [
+  { id: 'intro', icon: '🌟', title: 'مقدمة المشروع', titleEn: 'Project Introduction', age: '', themeEn: 'Explore', url: '', isIntro: true },
   { id: 'muadh-muawwidh', icon: '⚔', title: 'معاذ ومعوذ', titleEn: "Mu'adh & Mu'awwidh", age: 'غزوة بدر', themeEn: 'Badr', url: './story1.html' },
   { id: 'story2', icon: '🏹', title: 'أسامة بن زيد', titleEn: "Usama ibn Zayd", age: 'أمير الشبان', themeEn: 'Commander', url: './story2.html' },
   { id: 'umayr', icon: '🤲', title: 'عمير بن أبي وقاص', titleEn: 'Umayr ibn Abi Waqqas', age: 'غزوة بدر', themeEn: 'Tears for Jihad', url: './story3.html' },
@@ -153,13 +191,16 @@ const STORIES = [
   { id: 'zayd', icon: '✍', title: 'زيد بن ثابت', titleEn: 'Zayd ibn Thabit', age: 'كاتب الوحي', themeEn: 'Quran Compiler', url: './story5.html' },
   { id: 'ibn-umar', icon: '🌙', title: 'عبد الله بن عمر', titleEn: 'Abdullah ibn Umar', age: '13-15 سنة', themeEn: 'Night Prayer', url: './story6.html' },
   { id: 'ibn-abbas', icon: '📖', title: 'عبد الله بن عباس', titleEn: 'Abdullah ibn Abbas', age: '10-13 سنة', themeEn: 'Quran Scholar', url: './story7.html' },
+  { id: 'anas', icon: '🤲', title: 'أنس بن مالك', titleEn: 'Anas ibn Malik', age: '10 سنوات', themeEn: 'Keeper of Secrets', url: './story8.html' },
+  { id: 'hasan-hussein', icon: '🌿', title: 'الحسن والحسين', titleEn: 'Al-Hasan & Al-Hussein', age: 'غلامين صغيرين', themeEn: 'Clever Advice', url: './story9.html' },
 ];
 
-const CARD_BG = ['#BC6C25','#D4A373','#E07A5F','#81B29A','#E9C46A','#F2CC8F','#F4A261'];
+const CARD_BG = ['#D4AF37','#BC6C25','#D4A373','#E07A5F','#81B29A','#E9C46A','#F2CC8F','#F4A261','#A0782A','#6B8E23'];
 
 const homeScreen = document.getElementById('home-screen');
 const cardsGrid = document.getElementById('cards-grid');
 const comingOverlay = document.getElementById('coming-overlay');
+const introOverlay = document.getElementById('intro-overlay');
 
 function renderCards() {
   cardsGrid.innerHTML = '';
@@ -188,7 +229,9 @@ function renderCards() {
 
 function openCard(idx) {
   const s = STORIES[idx];
-  if (s.url) {
+  if (s.isIntro) {
+    introOverlay.classList.add('active');
+  } else if (s.url) {
     window.location.href = s.url;
   } else {
     comingOverlay.classList.add('active');
@@ -197,6 +240,7 @@ function openCard(idx) {
 
 function closeComing() {
   comingOverlay.classList.remove('active');
+  introOverlay.classList.remove('active');
 }
 
 // PWA

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>أنس بن مالك — صغار الصحابة</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Lora:ital,wght@0,400;0,600;1,400&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; overscroll-behavior: none; }
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(180deg, #0D1B3E 0%, #1A2A4A 40%, #C49A3C 100%); font-family: 'Cairo', sans-serif; }
+    #stars-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+    .moon { position: fixed; top: 24px; left: 24px; z-index: 1; pointer-events: none; font-size: 40px; opacity: 0.7; animation: moonGlow 4s ease-in-out infinite alternate; }
+    @keyframes moonGlow { 0% { opacity: 0.5; transform: scale(1); } 100% { opacity: 0.9; transform: scale(1.05); } }
+    .app-wrap { position: relative; z-index: 2; width: 100%; max-width: 720px; height: 100vh; height: 100dvh; display: flex; flex-direction: column; padding: 0 14px 12px; }
+    .top-bar { display: flex; align-items: center; gap: 6px; padding: 10px 2px 4px; flex-shrink: 0; }
+    .top-bar .back-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; color: #FFE4A0; transition: background 0.2s; user-select: none; -webkit-tap-highlight-color: transparent; flex-shrink: 0; touch-action: manipulation; }
+    .top-bar .back-btn:hover { background: rgba(255,255,255,0.18); }
+    .top-bar .back-btn:active { transform: scale(0.9); }
+    .top-bar .series-badge { font-family: 'Cairo', sans-serif; font-size: 11px; font-weight: 700; color: #FFE4A0; white-space: nowrap; margin-left: auto; }
+    .top-bar .counter-chip { font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700; color: #FFE4A0; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 1px 10px; white-space: nowrap; }
+    .top-bar .tts-chip { font-size: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 1px 8px; cursor: pointer; user-select: none; white-space: nowrap; color: #FFE4A0; -webkit-tap-highlight-color: transparent; transition: border-color 0.2s; touch-action: manipulation; }
+    .top-bar .tts-chip:hover { border-color: #FFD700; }
+    .top-bar .tts-chip.speaking { animation: chipPulse 0.8s ease-in-out infinite alternate; }
+    @keyframes chipPulse { 0% { border-color: rgba(255,215,0,0.3); } 100% { border-color: #FFD700; box-shadow: 0 0 8px rgba(255,215,0,0.3); } }
+    .top-bar .lang-chip { font-size: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 1px 8px; cursor: pointer; user-select: none; white-space: nowrap; color: #FFE4A0; -webkit-tap-highlight-color: transparent; transition: border-color 0.2s; touch-action: manipulation; }
+    .top-bar .lang-chip:hover { border-color: #FFD700; }
+    .app-wrap.lang-en .text-ar { display: none; }
+    .app-wrap.lang-ar .text-en { display: none; }
+    #stage { position: relative; flex: 1; min-height: 0; overflow: hidden; }
+    .slide { position: absolute; inset: 0; display: flex; flex-direction: column; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; overflow: hidden; }
+    .slide.active { opacity: 1; pointer-events: auto; z-index: 5; }
+    .img-card { flex-shrink: 0; position: relative; width: 100%; aspect-ratio: 8 / 2.2; border-radius: 18px 18px 0 0; background: linear-gradient(135deg, #1A2A4A 0%, #2D1B0E 50%, #1A2A4A 100%); border: 1px solid rgba(255,215,0,0.25); border-bottom: none; display: flex; align-items: center; justify-content: center; gap: 8px; overflow: hidden; }
+    .img-card svg { width: 105%; height: 105%; display: block; }
+    .img-card .scene-num { position: absolute; top: 8px; right: 8px; background: #FFD700; color: #2D1B0E; font-family: 'Cairo', sans-serif; font-size: 11px; font-weight: 800; border-radius: 8px; padding: 1px 8px; direction: ltr; z-index: 2; }
+    .night-wrap { flex: 1; min-height: 0; width: 100%; border-radius: 18px; background: linear-gradient(135deg, rgba(26,42,74,0.85) 0%, rgba(45,27,14,0.75) 100%); border: 1px solid rgba(255,215,0,0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: clamp(16px, 3vw, 32px); text-align: center; overflow-y: auto; }
+    .caption-card { width: 100%; flex: 1; min-height: 0; background: #FFF8E7; border: 1px solid #FFD700; border-top: 3px solid #FFD700; border-radius: 0 0 18px 18px; padding: clamp(10px, 2.5vw, 22px) clamp(12px, 3vw, 24px); text-align: center; overflow-y: auto; display: flex; flex-direction: column; }
+    .caption-card .caption-inner { margin: auto; width: 100%; }
+    .caption-card .text-ar { font-family: 'Cairo', sans-serif; font-weight: 700; font-size: clamp(17px, 3.5vw, 26px); line-height: 1.5; color: #1A0E06; margin-bottom: 8px; }
+    .caption-card .divider { width: 50px; height: 2px; background: linear-gradient(90deg, transparent, #FFD700, transparent); margin: 4px auto 8px; flex-shrink: 0; }
+    .caption-card .text-en { font-family: 'Lora', serif; font-size: clamp(13px, 2.2vw, 17px); line-height: 1.5; color: #3B2A1A; font-style: italic; font-weight: 400; }
+    .cover-icon { font-size: clamp(52px, 12vw, 80px); margin-bottom: 6px; filter: drop-shadow(0 4px 20px rgba(255,215,0,0.3)); }
+    .cover-ar-title { font-family: 'Aref Ruqaa', serif; font-weight: 700; font-size: clamp(32px, 7vw, 50px); color: #FFE4A0; text-shadow: 0 0 20px rgba(255,215,0,0.3); margin-bottom: 2px; }
+    .cover-ar-sub { font-family: 'Cairo', sans-serif; font-weight: 600; font-size: clamp(16px, 3vw, 22px); color: #FFD700; }
+    .cover-en-title { font-family: 'Lora', serif; font-size: clamp(14px, 2.6vw, 18px); color: rgba(255,228,160,0.7); font-style: italic; margin: 4px 0 8px; }
+    .cover-badge { display: inline-block; font-family: 'Cairo', sans-serif; font-size: clamp(11px, 1.8vw, 14px); font-weight: 700; color: #FFE4A0; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,215,0,0.3); border-radius: 40px; padding: 3px 16px; }
+    .moral-title { font-family: 'Cairo', sans-serif; font-weight: 700; font-size: clamp(18px, 3.6vw, 28px); color: #FFE4A0; margin-bottom: 10px; }
+    .moral-item { display: flex; align-items: center; gap: 8px; background: rgba(255,248,231,0.06); border: 1px solid rgba(255,215,0,0.15); border-radius: 12px; padding: 8px 14px; margin-bottom: 6px; text-align: right; width: 100%; }
+    .moral-num { font-family: 'Cairo', sans-serif; font-weight: 800; font-size: 14px; color: #FFD700; flex-shrink: 0; width: 24px; text-align: center; }
+    .moral-text { flex: 1; }
+    .moral-text .text-ar { font-family: 'Cairo', sans-serif; font-weight: 700; font-size: clamp(15px, 2.8vw, 20px); color: #FFF8E7; line-height: 1.5; }
+    .moral-text .text-en { font-family: 'Lora', serif; font-size: clamp(12px, 2vw, 15px); color: rgba(255,228,160,0.6); font-style: italic; line-height: 1.5; }
+    .closing-icon { font-size: clamp(44px, 10vw, 64px); margin-bottom: 4px; }
+    .closing-ar { font-family: 'Aref Ruqaa', serif; font-weight: 700; font-size: clamp(26px, 5vw, 36px); color: #FFE4A0; }
+    .closing-en { font-family: 'Lora', serif; font-size: clamp(14px, 2.6vw, 18px); color: rgba(255,228,160,0.6); font-style: italic; margin-top: 4px; }
+    .home-btn { display: inline-block; margin-top: 12px; background: rgba(255,215,0,0.12); border: 1px solid #FFD700; border-radius: 30px; padding: 6px 22px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 700; font-size: clamp(13px, 2vw, 16px); color: #FFE4A0; transition: background 0.2s; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; text-decoration: none; }
+    .home-btn:hover { background: rgba(255,215,0,0.25); }
+    .home-btn:active { transform: scale(0.95); }
+    .source-line { font-family: 'Cairo', sans-serif; font-size: clamp(10px, 1.5vw, 13px); color: rgba(255,228,160,0.4); margin-top: 10px; }
+    .progress-bar { display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0 2px; flex-shrink: 0; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,215,0,0.2); transition: background 0.3s, transform 0.3s; }
+    .dot.active { background: #FFD700; transform: scale(1.4); box-shadow: 0 0 8px rgba(255,215,0,0.3); }
+    .dot.done { background: rgba(255,215,0,0.5); }
+    .controls { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 4px 0 2px; flex-shrink: 0; }
+    .ctrl-btn { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #FFE4A0; transition: background 0.2s, transform 0.1s; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    .ctrl-btn:active { transform: scale(0.9); }
+    .ctrl-btn:hover { background: rgba(255,255,255,0.15); }
+    .ctrl-btn:disabled { opacity: 0.2; pointer-events: none; }
+    .ctrl-btn.speak-btn { width: 32px; height: 32px; font-size: 14px; }
+    @media (max-width: 480px) { .app-wrap { padding: 0 8px 8px; } .controls { gap: 10px; } .ctrl-btn { width: 34px; height: 34px; font-size: 15px; } .top-bar { padding: 6px 2px 2px; } .img-card { aspect-ratio: 8 / 2; } }
+    @media (max-height: 650px) { .img-card { aspect-ratio: 8 / 1.8; } .caption-card { padding: 8px 12px; } .night-wrap { padding: 12px 14px; } .top-bar { padding: 4px 2px 2px; } .controls { padding: 0; gap: 8px; } .ctrl-btn { width: 30px; height: 30px; font-size: 13px; } .progress-bar { padding: 2px 0; } .caption-card .text-ar { font-size: clamp(15px, 3vw, 20px); } }
+    @media (max-width: 360px) { .top-bar .series-badge { font-size: 10px; } .top-bar .tts-chip { font-size: 11px; } .top-bar .counter-chip { font-size: 11px; padding: 1px 6px; } }
+    .loading-msg { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #0D1B3E; color: #FFD700; font-size: 20px; z-index: 99; font-family: 'Cairo', sans-serif; }
+    .loading-msg.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="loading-msg" id="loadingMsg">جاري التحميل…</div>
+  <canvas id="stars-canvas"></canvas>
+  <div class="moon" aria-hidden="true">🌙</div>
+  <div class="app-wrap" id="appWrap">
+    <div class="top-bar">
+      <button class="back-btn" id="backBtn" aria-label="العودة إلى القصص" title="العودة إلى القصص">→</button>
+      <span class="series-badge">🤲 صغار الصحابة</span>
+      <span class="counter-chip" id="counterChip">١ / ١١</span>
+      <span class="tts-chip" id="ttsChip" role="button" tabindex="0">⏳ صوت</span>
+      <span class="lang-chip" id="langChip" role="button" tabindex="0">🇸🇦 عربي</span>
+    </div>
+    <div id="stage"></div>
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="controls">
+      <button class="ctrl-btn" id="prevBtn" aria-label="السابق">◀</button>
+      <button class="ctrl-btn" id="playBtn" aria-label="تشغيل / إيقاف">▶</button>
+      <button class="ctrl-btn speak-btn" id="speakBtn" aria-label="استماع">🔊</button>
+      <button class="ctrl-btn" id="nextBtn" aria-label="التالي">▶</button>
+    </div>
+  </div>
+  <script>
+(function(){'use strict';var D='<defs><linearGradient id="skySunset" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0D1B3E"/><stop offset="45%" stop-color="#2D1B0E"/><stop offset="100%" stop-color="#C49A3C"/></linearGradient><linearGradient id="skyNight" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0A0F24"/><stop offset="100%" stop-color="#1A2A4A"/></linearGradient><linearGradient id="skyFire" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3D0C0C"/><stop offset="60%" stop-color="#8B2500"/><stop offset="100%" stop-color="#D4601A"/></linearGradient><radialGradient id="sunGlow"><stop offset="0%" stop-color="#FFD700" stop-opacity="0.3"/><stop offset="100%" stop-color="#FFD700" stop-opacity="0"/></radialGradient><radialGradient id="fireGlow"><stop offset="0%" stop-color="#FF8C00" stop-opacity="0.4"/><stop offset="100%" stop-color="#FF8C00" stop-opacity="0"/></radialGradient><radialGradient id="lampGlow"><stop offset="0%" stop-color="#FFD700" stop-opacity="0.15"/><stop offset="100%" stop-color="#FFD700" stop-opacity="0"/></radialGradient><linearGradient id="tentGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7A4E2D"/><stop offset="100%" stop-color="#5C3A1E"/></linearGradient></defs>';function svg(i){return'<svg viewBox="0 0 400 110" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">'+D+i+'</svg>'}
+function st(){var s='',p=[[50,18],[90,30],[140,12],[180,25],[220,15],[270,28],[310,10],[350,22],[380,32],[30,40],[110,8],[160,35],[200,20],[250,35],[300,18],[340,35],[370,15]];for(var i=0;i<p.length;i++)s+='<circle cx="'+p[i][0]+'" cy="'+p[i][1]+'" r="'+(0.8+i%3*0.3)+'" fill="#FFF" opacity="'+(0.3+i%5*0.12)+'"/>';return s}
+function mn(cx,cy,r){return'<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="#FFE4A0" opacity="0.85"/><circle cx="'+(cx+r*0.3)+'" cy="'+(cy-r*0.2)+'" r="'+(r*0.85)+'" fill="#0D1B3E"/>'}
+function sn(cx,cy,r){return'<circle cx="'+cx+'" cy="'+cy+'" r="'+(r*1.6)+'" fill="url(#sunGlow)"/><circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="#FFD700" opacity="0.9"/>'}
+function pl(x,gy,sc){sc=sc||1;var th=38*sc,fs=22*sc,by=gy,ty=by-th;return'<path d="M'+(x-2*sc)+','+by+' Q'+(x-sc)+','+(ty+th*0.3)+' '+x+','+ty+' Q'+(x+sc)+','+(ty+th*0.3)+' '+(x+2*sc)+','+by+'" fill="#5C3A1E" stroke="#4A2A0A" stroke-width="'+(0.5*sc)+'"/><path d="M'+x+','+ty+' Q'+(x-fs*1.4)+','+(ty-fs*0.3)+' '+(x-fs*1.6)+','+(ty+fs*0.4)+' Q'+(x-fs*0.5)+','+(ty+fs*0.1)+' '+x+','+ty+'" fill="#2D5A27"/><path d="M'+x+','+ty+' Q'+(x+fs*1.4)+','+(ty-fs*0.3)+' '+(x+fs*1.6)+','+(ty+fs*0.4)+' Q'+(x+fs*0.5)+','+(ty+fs*0.1)+' '+x+','+ty+'" fill="#3A7A33"/><path d="M'+x+','+ty+' Q'+(x-fs*0.8)+','+(ty-fs*0.7)+' '+(x-fs*0.2)+','+(ty-fs*0.9)+' Q'+(x+fs*0.3)+','+(ty-fs*0.5)+' '+x+','+ty+'" fill="#4A8A43"/><path d="M'+x+','+ty+' Q'+(x+fs*0.8)+','+(ty-fs*0.7)+' '+(x+fs*0.2)+','+(ty-fs*0.9)+' Q'+(x-fs*0.3)+','+(ty-fs*0.5)+' '+x+','+ty+'" fill="#3A7A33"/>'}
+function du(){return'<path d="M0,65 Q60,52 120,62 Q180,48 240,58 Q300,50 360,55 L400,52 L400,110 L0,110 Z" fill="#A0782A" opacity="0.5"/><path d="M0,76 Q80,64 160,73 Q220,62 280,70 Q340,60 400,66 L400,110 L0,110 Z" fill="#8B6914" opacity="0.6"/><path d="M0,88 Q100,76 200,85 Q300,74 400,82 L400,110 L0,110 Z" fill="#C49A3C" opacity="0.4"/><path d="M0,97 Q80,88 160,94 Q260,84 340,92 L400,90 L400,110 L0,110 Z" fill="#D4AF37" opacity="0.25"/>'}
+function tf(x,y,tc,hc,bc){bc=bc||'#8B6914';return'<path d="M'+(x-6)+','+(y-10)+' L'+(x-9)+','+(y+20)+' L'+(x+9)+','+(y+20)+' L'+(x+6)+','+(y-10)+' Z" fill="'+tc+'" stroke="#000" stroke-width="0.3" opacity="0.9"/><rect x="'+(x-3)+'" y="'+(y-12)+'" width="6" height="4" fill="'+hc+'" rx="1"/><circle cx="'+x+'" cy="'+(y-16)+'" r="5" fill="'+hc+'"/><path d="M'+(x-5)+','+(y-17)+' Q'+x+','+(y-24)+' '+(x+5)+','+(y-17)+'" fill="'+hc+'" opacity="0.8"/><rect x="'+(x-7)+'" y="'+(y-3)+'" width="14" height="2.5" fill="'+bc+'" rx="0.5" opacity="0.7"/>'}
+window.sceneDesert=function(){return svg('<rect width="400" height="110" fill="url(#skySunset)"/>'+sn(330,38,16)+du()+pl(75,88,1)+pl(320,85,0.8))};
+window.sceneNight=function(){return svg('<rect width="400" height="110" fill="url(#skyNight)"/>'+st()+mn(320,28,12)+'<path d="M0,75 Q100,65 200,72 Q300,62 400,68 L400,110 L0,110 Z" fill="#2D1B0E" opacity="0.8"/><path d="M130,80 L170,40 L210,80 Z" fill="url(#tentGrad)" stroke="#4A2A0A" stroke-width="0.5"/><path d="M130,80 L170,40 L170,80 Z" fill="#5C3A1E"/><path d="M148,80 L170,58 L192,80 Z" fill="#1A0E06"/><ellipse cx="240" cy="82" rx="10" ry="4" fill="#3D1C00"/><circle cx="240" cy="80" r="8" fill="url(#fireGlow)"/><path d="M236,80 Q240,68 244,80" fill="#FF8C00" opacity="0.9"/><path d="M238,80 Q240,72 242,80" fill="#FFD700" opacity="0.7"/><line x1="236" y1="82" x2="244" y2="82" stroke="#4A2A0A" stroke-width="2" stroke-linecap="round"/>'+pl(60,78,0.9)+pl(310,76,0.8))};
+window.sceneBattle=function(){return svg('<rect width="400" height="110" fill="url(#skyFire)"/><ellipse cx="80" cy="45" rx="40" ry="20" fill="#C49A3C" opacity="0.12"/><ellipse cx="250" cy="55" rx="50" ry="18" fill="#C49A3C" opacity="0.08"/><ellipse cx="350" cy="40" rx="35" ry="15" fill="#C49A3C" opacity="0.1"/><path d="M0,65 Q100,55 200,62 Q300,52 400,58 L400,110 L0,110 Z" fill="#5C3A1E" opacity="0.7"/><path d="M0,78 Q80,70 180,76 Q280,66 400,72 L400,110 L0,110 Z" fill="#4A2A0A" opacity="0.6"/><g transform="translate(200,55)"><rect x="-2" y="-30" width="4" height="55" fill="#C0C0C0" rx="1" transform="rotate(-30)"/><rect x="-2" y="-30" width="4" height="55" fill="#E0E0E0" rx="1" transform="rotate(30)"/><rect x="-5" y="-2" width="10" height="5" fill="#8B6914" rx="1"/><rect x="-2" y="23" width="4" height="4" fill="#8B6914" rx="0.5"/><rect x="-2" y="23" width="4" height="4" fill="#8B6914" rx="0.5" transform="rotate(30)"/><circle cx="0" cy="-32" r="4" fill="#FFD700" opacity="0.6"/></g><circle cx="140" cy="62" r="12" fill="#8B4513" stroke="#D4AF37" stroke-width="1.5"/><circle cx="140" cy="62" r="6" fill="#A0782A" opacity="0.5"/><circle cx="260" cy="60" r="10" fill="#8B4513" stroke="#D4AF37" stroke-width="1.5"/>'+pl(60,72,0.7)+pl(340,70,0.7))};
+window.sceneMadinah=function(){return svg('<rect width="400" height="110" fill="url(#skySunset)"/>'+sn(50,32,14)+'<g transform="translate(200,40)"><path d="M-20,40 Q-20,15 0,8 Q20,15 20,40 Z" fill="#E8D5A3" stroke="#D4AF37" stroke-width="0.8"/><path d="M0,8 L0,4" stroke="#FFD700" stroke-width="1.5"/><circle cx="0" cy="3" r="2" fill="#FFD700"/><rect x="-22" y="40" width="44" height="20" fill="#D4B88C" stroke="#C49A3C" stroke-width="0.5"/><path d="M-8,60 Q0,40 8,60" fill="#2D1B0E"/><rect x="-30" y="15" width="4" height="45" fill="#E8D5A3"/><circle cx="-28" cy="15" r="3" fill="#D4AF37"/><rect x="26" y="15" width="4" height="45" fill="#E8D5A3"/><circle cx="28" cy="15" r="3" fill="#D4AF37"/></g>'+du()+pl(80,82,1)+pl(320,80,0.9))};
+window.sceneTent=function(){return svg('<rect width="400" height="110" fill="#1A0E06"/><path d="M0,0 Q200,25 400,0 L400,35 Q200,55 0,35 Z" fill="#5C3A1E" opacity="0.6"/><path d="M0,35 Q200,55 400,35 L400,110 L0,110 Z" fill="#2D1B0E" opacity="0.9"/><rect x="40" y="85" width="320" height="25" fill="#7A4E2D" rx="2" opacity="0.6"/><rect x="45" y="87" width="310" height="18" fill="#8B5E3C" rx="1" opacity="0.4"/><rect x="80" y="78" width="30" height="12" fill="#A0782A" rx="3"/><rect x="290" y="78" width="30" height="12" fill="#A0782A" rx="3"/><line x1="200" y1="30" x2="200" y2="55" stroke="#8B6914" stroke-width="1"/><ellipse cx="200" cy="58" rx="6" ry="3" fill="#D4AF37"/><rect x="197" y="52" width="6" height="6" fill="#E8D5A3"/><path d="M199,52 L200,46 L201,52" fill="#FF8C00" opacity="0.8"/><circle cx="200" cy="48" r="12" fill="url(#lampGlow)"/><line x1="100" y1="35" x2="100" y2="85" stroke="#4A2A0A" stroke-width="2"/><line x1="300" y1="35" x2="300" y2="85" stroke="#4A2A0A" stroke-width="2"/>'+pl(360,80,0.8))};
+window.sceneStudy=function(){return svg('<rect width="400" height="110" fill="#1A0E06"/><ellipse cx="200" cy="60" rx="180" ry="60" fill="#8B6914" opacity="0.08"/><ellipse cx="200" cy="60" rx="120" ry="40" fill="#C49A3C" opacity="0.06"/><rect x="0" y="85" width="400" height="25" fill="#2D1B0E"/><g transform="translate(200,55)"><polygon points="-8,28 0,20 8,28 0,35" fill="#5C3A1E"/><polygon points="-20,30 0,15 20,30" fill="#7A4E2D" stroke="#4A2A0A" stroke-width="0.5"/><polygon points="-18,30 0,17 18,30" fill="#FFF8E7"/><line x1="-10" y1="24" x2="10" y2="24" stroke="#1A0E06" stroke-width="0.5" opacity="0.3"/><line x1="-11" y1="27" x2="11" y2="27" stroke="#1A0E06" stroke-width="0.5" opacity="0.3"/></g><g transform="translate(100,55)"><rect x="-2" y="0" width="4" height="25" fill="#D4AF37"/><ellipse cx="0" cy="-2" rx="8" ry="3" fill="#D4AF37"/><ellipse cx="0" cy="-5" rx="4" ry="5" fill="#E8D5A3"/><path d="M-2,-5 L0,-10 L2,-5" fill="#FF8C00" opacity="0.8"/><circle cx="0" cy="-10" r="6" fill="url(#fireGlow)"/><path d="M0,-5 L0,-12" stroke="#FFD700" stroke-width="1.5" opacity="0.6"/></g>'+pl(310,80,1)+'<circle cx="60" cy="20" r="0.8" fill="#FFF" opacity="0.4"/><circle cx="150" cy="15" r="1" fill="#FFF" opacity="0.3"/><circle cx="280" cy="22" r="0.8" fill="#FFF" opacity="0.4"/>')};
+window.scenePrayer=function(){return svg('<rect width="400" height="110" fill="#0D1B3E"/><polygon points="200,0 80,110 320,110" fill="#FFD700" opacity="0.05"/><polygon points="200,0 140,110 260,110" fill="#FFD700" opacity="0.08"/><polygon points="200,0 170,110 230,110" fill="#FFD700" opacity="0.04"/><path d="M0,85 Q200,78 400,85 L400,110 L0,110 Z" fill="#2D1B0E" opacity="0.8"/><g transform="translate(200,68)"><path d="M-6,10 Q-10,-5 -8,-15 Q-6,-20 -3,-18 Q0,-15 -3,5 Z" fill="#D4B88C" stroke="#A0782A" stroke-width="0.5"/><path d="M6,10 Q10,-5 8,-15 Q6,-20 3,-18 Q0,-15 3,5 Z" fill="#D4B88C" stroke="#A0782A" stroke-width="0.5"/><ellipse cx="0" cy="-8" rx="6" ry="10" fill="#FFD700" opacity="0.1"/></g><g transform="translate(200,85)" opacity="0.3"><path d="M-30,0 Q-30,-15 0,-20 Q30,-15 30,0 Z" fill="#FFE4A0"/><rect x="-25" y="0" width="50" height="10" fill="#FFE4A0"/><rect x="-35" y="-5" width="4" height="15" fill="#FFE4A0"/><rect x="31" y="-5" width="4" height="15" fill="#FFE4A0"/></g><circle cx="330" cy="25" r="1.5" fill="#FFD700" opacity="0.6"/><circle cx="60" cy="30" r="1" fill="#FFF" opacity="0.4"/><circle cx="140" cy="18" r="0.8" fill="#FFF" opacity="0.5"/>')};
+window.sceneWrestle=function(){return svg('<rect width="400" height="110" fill="url(#skySunset)"/>'+sn(340,28,11)+du()+'<path d="M44,58 Q54,44 64,58 Z" fill="#FFF8E7" stroke="#CCC" stroke-width="0.3"/><circle cx="54" cy="42" r="5" fill="#D4B88C"/><path d="M48,42 Q54,32 60,42 Z" fill="#FFF8E7"/><path d="M38,54 Q54,38 70,54 Z" fill="#FFF" opacity="0.12"/><rect x="162" y="52" width="24" height="48" fill="#FFF8E7" stroke="#DDD" stroke-width="0.3" rx="2"/><path d="M164,52 L166,47 L182,47 L184,52 Z" fill="#FFF8E7" stroke="#DDD" stroke-width="0.3"/><rect x="166" y="64" width="16" height="2.5" fill="#8B6914" rx="0.5" opacity="0.7"/><circle cx="174" cy="43" r="5.5" fill="#D4B88C"/><path d="M168,43 Q174,33 180,43" fill="#FFF8E7"/><path d="M169,43 Q174,32 179,43" fill="none" stroke="#FFF8E7" stroke-width="1.5"/><line x1="162" y1="66" x2="148" y2="76" stroke="#D4B88C" stroke-width="2.5" stroke-linecap="round"/><line x1="186" y1="66" x2="200" y2="76" stroke="#D4B88C" stroke-width="2.5" stroke-linecap="round"/><rect x="214" y="52" width="24" height="48" fill="#E8D5A3" stroke="#CCC" stroke-width="0.3" rx="2"/><path d="M216,52 L218,47 L234,47 L236,52 Z" fill="#E8D5A3" stroke="#CCC" stroke-width="0.3"/><rect x="218" y="64" width="16" height="2.5" fill="#5C3A1E" rx="0.5" opacity="0.7"/><circle cx="226" cy="43" r="5.5" fill="#C49A3C"/><path d="M220,43 Q226,33 232,43" fill="#E8D5A3"/><path d="M221,43 Q226,32 231,43" fill="none" stroke="#E8D5A3" stroke-width="1.5"/><line x1="214" y1="66" x2="200" y2="76" stroke="#C49A3C" stroke-width="2.5" stroke-linecap="round"/><line x1="238" y1="66" x2="252" y2="76" stroke="#C49A3C" stroke-width="2.5" stroke-linecap="round"/>'+pl(75,82,0.9)+pl(320,80,0.8))};
+window.sceneScribe=function(){return svg('<rect width="400" height="110" fill="#1A0E06"/><ellipse cx="200" cy="55" rx="180" ry="55" fill="#C49A3C" opacity="0.05"/><rect x="0" y="82" width="400" height="28" fill="#2D1B0E"/><rect x="100" y="82" width="200" height="28" fill="#5C3A1E" opacity="0.4" rx="3"/><g transform="translate(200,55)"><rect x="-25" y="-10" width="50" height="35" fill="#FFF8E7" rx="2" stroke="#D4AF37" stroke-width="0.5"/><line x1="-18" y1="-2" x2="18" y2="-2" stroke="#1A0E06" stroke-width="0.4" opacity="0.3"/><line x1="-18" y1="2" x2="18" y2="2" stroke="#1A0E06" stroke-width="0.4" opacity="0.3"/><line x1="-18" y1="6" x2="12" y2="6" stroke="#1A0E06" stroke-width="0.4" opacity="0.3"/><line x1="-18" y1="10" x2="15" y2="10" stroke="#1A0E06" stroke-width="0.4" opacity="0.3"/><line x1="-18" y1="14" x2="8" y2="14" stroke="#1A0E06" stroke-width="0.4" opacity="0.3"/></g><line x1="210" y1="35" x2="225" y2="50" stroke="#8B6914" stroke-width="2.5" stroke-linecap="round"/><line x1="225" y1="50" x2="228" y2="52" stroke="#1A0E06" stroke-width="1" stroke-linecap="round"/><g transform="translate(240,62)"><ellipse cx="0" cy="5" rx="6" ry="3" fill="#4A2A0A"/><rect x="-6" y="-5" width="12" height="10" fill="#3D1C00" rx="1"/><ellipse cx="0" cy="-5" rx="6" ry="3" fill="#1A0E06"/><ellipse cx="0" cy="-5" rx="3" ry="1.5" fill="#0A0A0A"/></g><g transform="translate(90,50)"><rect x="-2" y="0" width="4" height="25" fill="#D4AF37"/><ellipse cx="0" cy="-2" rx="6" ry="2.5" fill="#D4AF37"/><ellipse cx="0" cy="-4" rx="3" ry="4" fill="#E8D5A3"/><path d="M-1,-4 L0,-8 L1,-4" fill="#FF8C00" opacity="0.8"/><circle cx="0" cy="-8" r="5" fill="url(#fireGlow)"/></g><circle cx="50" cy="18" r="0.8" fill="#FFF" opacity="0.4"/><circle cx="320" cy="22" r="1" fill="#FFF" opacity="0.3"/><circle cx="370" cy="15" r="0.8" fill="#FFF" opacity="0.4"/>')};
+window.sceneCamel=function(){return svg('<rect width="400" height="110" fill="url(#skySunset)"/>'+sn(50,32,14)+du()+'<g transform="translate(200,55)"><ellipse cx="0" cy="10" rx="22" ry="10" fill="#8B6914"/><ellipse cx="-2" cy="2" rx="10" ry="8" fill="#8B6914"/><path d="M18,5 Q25,-8 22,-18 L26,-18 Q28,-5 22,8" fill="#8B6914" stroke="#7A5E12" stroke-width="0.5"/><ellipse cx="26" cy="-20" rx="6" ry="4" fill="#8B6914"/><ellipse cx="22" cy="-23" rx="2" ry="1" fill="#7A5E12"/><circle cx="28" cy="-21" r="1" fill="#1A0E06"/><rect x="-14" y="18" width="4" height="18" fill="#7A5E12" rx="1"/><rect x="-6" y="18" width="4" height="18" fill="#7A5E12" rx="1"/><rect x="6" y="18" width="4" height="18" fill="#7A5E12" rx="1"/><rect x="14" y="18" width="4" height="18" fill="#7A5E12" rx="1"/><path d="M-22,5 Q-28,10 -26,15" stroke="#7A5E12" stroke-width="2" fill="none" stroke-linecap="round"/></g>'+pl(80,82,1)+pl(340,80,0.8))};
+window.sceneOasis=function(){return svg('<rect width="400" height="110" fill="url(#skySunset)"/>'+sn(330,30,12)+du()+'<ellipse cx="200" cy="90" rx="100" ry="12" fill="#2D5A8A" opacity="0.5"/><ellipse cx="200" cy="90" rx="80" ry="8" fill="#4A8ABD" opacity="0.3"/><line x1="170" y1="88" x2="230" y2="88" stroke="#FFD700" stroke-width="0.5" opacity="0.15"/>'+pl(100,78,1)+pl(300,78,1)+'<path d="M155,65 Q160,55 165,65" fill="#4A8A43"/><path d="M235,62 Q240,52 245,62" fill="#4A8A43"/>')};
+window.sceneCity=function(){return svg('<rect width="400" height="110" fill="url(#skySunset)"/>'+sn(330,30,12)+'<g transform="translate(0,40)"><rect x="30" y="15" width="35" height="45" fill="#D4B88C" rx="1"/><rect x="42" y="25" width="10" height="12" fill="#2D1B0E" rx="0.5"/><rect x="70" y="10" width="30" height="50" fill="#C49A3C" rx="1"/><rect x="78" y="20" width="8" height="10" fill="#2D1B0E" rx="0.5"/><rect x="110" y="20" width="40" height="40" fill="#E8D5A3" rx="1"/><rect x="120" y="30" width="10" height="12" fill="#2D1B0E" rx="0.5"/><rect x="160" y="25" width="30" height="35" fill="#D4B88C" rx="1"/><path d="M170,20 Q185,0 200,20 Z" fill="#FFE4A0" stroke="#D4AF37" stroke-width="0.5"/><rect x="195" y="5" width="4" height="40" fill="#E8D5A3"/><circle cx="197" cy="5" r="3" fill="#D4AF37"/></g><path d="M0,85 Q200,80 400,85 L400,110 L0,110 Z" fill="#C49A3C" opacity="0.4"/><path d="M0,90 Q200,86 400,90 L400,110 L0,110 Z" fill="#A0782A" opacity="0.4"/>'+pl(280,78,1)+pl(360,76,0.9))};
+window.sceneArmy=function(){return svg('<rect width="400" height="110" fill="url(#skySunset)"/>'+sn(50,30,13)+'<path d="M0,70 Q100,62 200,67 Q300,60 400,65 L400,110 L0,110 Z" fill="#C49A3C" opacity="0.4"/><path d="M0,78 Q80,70 180,76 Q280,68 400,73 L400,110 L0,110 Z" fill="#A0782A" opacity="0.5"/><path d="M80,72 L120,30 L160,72 Z" fill="url(#tentGrad)" stroke="#4A2A0A" stroke-width="0.8"/><path d="M80,72 L120,30 L120,72 Z" fill="#6B4226"/><path d="M100,72 L120,48 L140,72 Z" fill="#1A0E06"/><line x1="120" y1="30" x2="120" y2="18" stroke="#4A2A0A" stroke-width="1.5"/><rect x="114" y="18" width="12" height="8" fill="#D4AF37" rx="0.5"/><path d="M260,74 L290,48 L320,74 Z" fill="#7A4E2D" stroke="#4A2A0A" stroke-width="0.5"/><path d="M260,74 L290,48 L290,74 Z" fill="#5C3A1E"/><line x1="290" y1="48" x2="290" y2="38" stroke="#4A2A0A" stroke-width="1"/><rect x="286" y="38" width="8" height="6" fill="#C49A3C" rx="0.5"/>'+tf(190,65,'#E8D5A3','#D4B88C')+tf(210,65,'#F0E8D0','#C49A3C','#5C3A1E')+pl(40,72,0.8)+pl(370,70,0.8))};
+window.sceneTarget=function(){return svg('<rect width="400" height="110" fill="url(#skySunset)"/>'+sn(330,28,12)+'<path d="M0,75 Q100,66 200,72 Q300,64 400,70 L400,110 L0,110 Z" fill="#C49A3C" opacity="0.4"/><path d="M0,84 Q80,75 180,82 Q280,72 400,78 L400,110 L0,110 Z" fill="#A0782A" opacity="0.5"/><g transform="translate(280,52)"><circle cx="0" cy="0" r="18" fill="#8B4513" stroke="#5C3A1E" stroke-width="2"/><circle cx="0" cy="0" r="14" fill="#A0782A" stroke="#D4AF37" stroke-width="1"/><circle cx="0" cy="0" r="10" fill="#5C3A1E"/><circle cx="0" cy="0" r="5" fill="#FFD700" opacity="0.8"/><circle cx="0" cy="0" r="2" fill="#8B2500"/><line x1="5" y1="-2" x2="28" y2="-15" stroke="#8B6914" stroke-width="1.5" stroke-linecap="round"/><path d="M28,-15 L32,-21 L26,-13 Z" fill="#8B6914"/><line x1="24" y1="-17" x2="28" y2="-15" stroke="#8B6914" stroke-width="1" stroke-linecap="round"/><path d="M22,-18 L28,-15 L25,-12" fill="#5C3A1E" opacity="0.6"/></g><g transform="translate(160,65)"><path d="M0,10 Q-15,-10 0,-18 Q15,-10 0,10" fill="none" stroke="#8B6914" stroke-width="2.5" stroke-linecap="round"/><line x1="0" y1="10" x2="0" y2="-18" stroke="#5C3A1E" stroke-width="0.5"/><line x1="0" y1="10" x2="0" y2="-18" stroke="#8B6914" stroke-width="0.5"/></g>'+pl(60,72,0.8)+pl(370,70,0.7))};
+})();
+  </script>
+  <script>
+    (function () {
+      'use strict';
+
+var SLIDES = [
+  { type: 'cover', title: 'أَنَسُ بْنُ مَالِكٍ', titleEn: 'Anas ibn Malik', subtitle: 'خَادِمُ رَسُولِ اللَّهِ ﷺ — حَافِظُ السِّرِّ الْأَمِينِ', emojis: ['🤲','🌟'], source: 'صَحِيحُ مُسْلِمَ (كِتَابُ فَضَائِلِ الصَّحَابَةِ)' },
+  { type: 'intro', emojis: ['📜'], lines: [
+    { ar: 'نَسَبُهُ: أَنَسُ بْنُ مَالِكِ بْنِ النَّضْرِ الْأَنْصَارِيُّ الْخَزْرَجِيُّ، خَادِمُ رَسُولِ اللَّهِ ﷺ وَأَحَدُ أَكْثَرِ الصَّحَابَةِ رِوَايَةً لِلْحَدِيثِ.', en: 'Lineage: Anas ibn Malik al-Ansari al-Khazraji, servant of the Messenger of Allah ﷺ.' },
+    { ar: 'عُمْرُهُ: نَحْوَ 10 سَنَوَاتٍ عِنْدَمَا جَاءَتْ بِهِ أُمُّهُ أُمُّ سُلَيْمٍ إِلَى النَّبِيِّ ﷺ لِيَخْدُمَهُ.', en: 'Age: About 10 years when his mother Umm Sulaym brought him to serve the Prophet ﷺ.' },
+    { ar: 'فَضْلُهُ: خَدَمَ النَّبِيَّ ﷺ 10 سِنِينَ، وَدَعَا لَهُ بِالْبَرَكَةِ فِي الْمَالِ وَالْوَلَدِ وَطُولِ الْعُمْرِ.', en: 'Virtue: He served the Prophet for 10 years. The Prophet prayed for him to have blessings.' },
+  ]},
+  { type: 'scene', svg: 'city', ar: 'جَاءَتْ أُمُّ سُلَيْمٍ بِأَنَسٍ إِلَى النَّبِيِّ ﷺ وَعُمْرُهُ 10 سَنَوَاتٍ، وَقَالَتْ: يَا رَسُولَ اللَّهِ، هَذَا أَنَسٌ غُلَامٌ ذَكِيٌّ يَخْدُمُكَ. فَفَرِحَ بِهِ النَّبِيُّ ﷺ.', en: 'Umm Sulaym brought Anas to the Prophet at age 10, saying: "This smart boy will serve you." The Prophet welcomed him.' },
+  { type: 'scene', svg: 'madinah', ar: 'كَانَ أَنَسٌ يَخْدُمُ النَّبِيَّ ﷺ بِإِخْلَاصٍ، وَكَانَ النَّبِيُّ ﷺ يُعَامِلُهُ بِرَحْمَةٍ وَحَنَانٍ وَيَقُولُ لَهُ: يَا بُنَيَّ.', en: 'Anas served the Prophet sincerely. The Prophet treated him with mercy and called him "O my son."' },
+  { type: 'scene', svg: 'desert', ar: 'فِي يَوْمٍ مِنَ الْأَيَّامِ، أَرْسَلَ النَّبِيُّ ﷺ أَنَساً فِي حَاجَةٍ، فَانْطَلَقَ أَنَسٌ يَجْرِي بِكُلِّ حَمَاسٍ وَفَرَحٍ لِيُنَفِّذَ أَمْرَ النَّبِيِّ الْحَبِيبِ.', en: 'One day, the Prophet sent Anas on an errand. Anas ran eagerly to carry out the beloved Prophet\'s command.' },
+  { type: 'scene', svg: 'tent', ar: 'تَأَخَّرَ أَنَسٌ فِي الْعَوْدَةِ إِلَى الْمَنْزِلِ، فَسَأَلَتْهُ أُمُّهُ أُمُّ سُلَيْمٍ: مَا الَّذِي حَبَسَكَ يَا بُنَيَّ؟ فَقَالَ بِأَدَبٍ: بَعَثَنِي رَسُولُ اللَّهِ ﷺ فِي حَاجَةٍ.', en: 'Anas returned home late. His mother Umm Sulaym asked: "What kept you, my son?" He said politely: "The Messenger of Allah sent me on an errand."' },
+  { type: 'scene', svg: 'study', ar: 'سَأَلَتْهُ أُمُّهُ: وَمَا هِيَ الْحَاجَةُ؟ فَقَالَ أَنَسٌ بِثَبَاتٍ وَثِقَةٍ: إِنَّهُ سِرٌّ لِرَسُولِ اللَّهِ ﷺ! فَابْتَسَمَتْ أُمُّهُ وَقَالَتْ: لَا تُحَدِّثَنَّ بِسِرِّ رَسُولِ اللَّهِ أَحَداً.', en: 'His mother asked: "What was the errand?" Anas said firmly: "It is a secret of the Messenger of Allah!" His mother smiled: "Never tell anyone his secret."' },
+  { type: 'scene', svg: 'scribe', ar: 'حَفِظَ أَنَسٌ السِّرَّ وَلَمْ يُخْبِرْ بِهِ أَحَداً طَوَالَ حَيَاتِهِ، فَكَانَ مِثَالاً رَائِعاً فِي الْأَمَانَةِ وَحِفْظِ الْأَسْرَارِ، وَنَالَ بِذَلِكَ مَحَبَّةَ النَّبِيِّ ﷺ وَثِقَتَهُ.', en: 'Anas kept the secret and never told anyone throughout his life, becoming a perfect example of trustworthiness.' },
+  { type: 'morals', emojis: ['🌱'], items: [
+    { ar: 'الْأَمَانَةُ وَحِفْظُ السِّرِّ مِنْ أَعْظَمِ صِفَاتِ الْمُؤْمِنِ الصَّادِقِ.', en: 'Trustworthiness and keeping secrets are among the greatest traits of a true believer.' },
+    { ar: 'الطِّفْلُ الْأَمِينُ يَنَالُ ثِقَةَ الْكِبَارِ وَيَكُونُ قُدْوَةً لِأَقْرَانِهِ.', en: 'A trustworthy child earns the trust of adults and becomes a role model for peers.' },
+    { ar: 'خِدْمَةُ النَّبِيِّ ﷺ وَطَاعَتُهُ تَجْلِبُ الْبَرَكَةَ فِي الْعُمُرِ وَالرِّزْقِ.', en: 'Serving and obeying the Prophet brings blessings in life and provision.' },
+  ]},
+  { type: 'closing', emojis: ['⭐'], ar: 'نَلْتَقِي فِي الْقِصَّةِ الْقَادِمَةِ', en: 'See you in the next story', source: 'صَحِيحُ مُسْلِمَ — سُنَنُ التِّرْمِذِيِّ' },
+];
+
+      var total = SLIDES.length;
+      var stage = document.getElementById('stage');
+      var loadingMsg = document.getElementById('loadingMsg');
+      var counterChip = document.getElementById('counterChip');
+      var progressBar = document.getElementById('progressBar');
+      var prevBtn = document.getElementById('prevBtn');
+      var nextBtn = document.getElementById('nextBtn');
+      var playBtn = document.getElementById('playBtn');
+      var speakBtn = document.getElementById('speakBtn');
+      var ttsChip = document.getElementById('ttsChip');
+      var langChip = document.getElementById('langChip');
+      var backBtn = document.getElementById('backBtn');
+
+      var current = 0, autoPlay = false, speaking = false, playGen = 0;
+      var ttsAvail = false, arVoice = null, voiceDone = false;
+      var appLang = 'ar';
+
+      function arabicNum(n) {
+        var d = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+        if (n === 0) return '٠';
+        var s = '';
+        while (n > 0) { s = d[n % 10] + s; n = Math.floor(n / 10); }
+        return s;
+      }
+
+      function initTTS() {
+        if (!('speechSynthesis' in window)) { ttsChip.textContent = '🔇 غير متوفر'; voiceDone = true; return; }
+        ttsChip.textContent = '⏳ جاري...';
+        loadVoices();
+        if (window.speechSynthesis.onvoiceschanged !== undefined)
+          window.speechSynthesis.onvoiceschanged = loadVoices;
+        var pc = 0, pt = setInterval(function () {
+          if (voiceDone || pc > 25) { clearInterval(pt); return; }
+          loadVoices(); pc++;
+        }, 200);
+      }
+      function loadVoices() {
+        if (!('speechSynthesis' in window)) return;
+        var v = window.speechSynthesis.getVoices();
+        if (v.length > 0 && !voiceDone) {
+          voiceDone = true; ttsAvail = true;
+          arVoice = v.find(function (x) { return /^ar/i.test(x.lang); });
+          ttsChip.textContent = arVoice ? '🔊 صوت عربي' : '🔉 ' + v.length + ' صوت';
+          window.speechSynthesis.cancel();
+        }
+      }
+      function stopSpeech() {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        speaking = false; ttsChip.classList.remove('speaking');
+      }
+      function sceneSvg(type) {
+        switch (type) {
+          case 'desert': return window.sceneDesert ? window.sceneDesert() : '';
+          case 'night': return window.sceneNight ? window.sceneNight() : '';
+          case 'battle': return window.sceneBattle ? window.sceneBattle() : '';
+          case 'madinah': return window.sceneMadinah ? window.sceneMadinah() : '';
+          case 'tent': return window.sceneTent ? window.sceneTent() : '';
+          case 'study': return window.sceneStudy ? window.sceneStudy() : '';
+          case 'prayer': return window.scenePrayer ? window.scenePrayer() : '';
+          case 'wrestle': return window.sceneWrestle ? window.sceneWrestle() : '';
+          case 'scribe': return window.sceneScribe ? window.sceneScribe() : '';
+          case 'camel': return window.sceneCamel ? window.sceneCamel() : '';
+          case 'oasis': return window.sceneOasis ? window.sceneOasis() : '';
+          case 'city': return window.sceneCity ? window.sceneCity() : '';
+          case 'army': return window.sceneArmy ? window.sceneArmy() : '';
+          case 'target': return window.sceneTarget ? window.sceneTarget() : '';
+          default: return '';
+        }
+      }
+
+      function getNarration(i) {
+        var s = SLIDES[i];
+        if (s.type === 'cover') return s.title + '. ' + s.subtitle;
+        if (s.type === 'intro') return s.lines.map(function (l) { return l.ar; }).join(' ');
+        if (s.type === 'scene') return s.ar;
+        if (s.type === 'morals') return s.items.map(function (m) { return m.ar; }).join(' ');
+        if (s.type === 'closing') return 'نلتقي في القصة القادمة';
+        return '';
+      }
+
+      function queueNarration(from) {
+        if (!('speechSynthesis' in window)) return;
+        stopSpeech();
+        playGen++; var mg = playGen;
+        if (!voiceDone) { var v = window.speechSynthesis.getVoices(); if (v.length > 0) { voiceDone = true; ttsAvail = true; arVoice = v.find(function (x) { return /^ar/i.test(x.lang); }); } }
+        if (!ttsAvail) return;
+        var av = arVoice;
+        for (var i = from; i < total; i++) {
+          var t = getNarration(i); if (!t) continue;
+          var u = new SpeechSynthesisUtterance(t);
+          u.lang = av ? av.lang : 'ar'; u.rate = 0.85; if (av) u.voice = av;
+          u.onstart = (function (si) { return function () { if (mg !== playGen) return; speaking = true; ttsChip.classList.add('speaking'); if (current !== si) { current = si; show(current); } }; })(i);
+          u.onerror = (function (si) { return function () { if (mg !== playGen) return; if (si === current) speaking = false; ttsChip.classList.remove('speaking'); }; })(i);
+          if (i === total - 1) { u.onend = (function () { return function () { if (mg !== playGen) return; speaking = false; ttsChip.classList.remove('speaking'); autoPlay = false; updatePlayBtn(); }; })(); }
+          try { window.speechSynthesis.speak(u); } catch (e) {}
+        }
+      }
+
+      function renderSlide(i) {
+        var s = SLIDES[i]; if (!s) return '';
+        var h = '';
+
+        function emojisHtml(arr) {
+          return arr.map(function (e) { return '<span class="scene-emoji">' + e + '</span>'; }).join('');
+        }
+
+        if (s.type === 'cover') {
+          h += '<div class="night-wrap"><div class="cover-icon">' + s.emojis[0] + '</div><div class="cover-ar-title">' + s.title + '</div><div class="cover-ar-sub">' + s.subtitle + '</div><div class="cover-en-title">' + s.titleEn + '</div><div class="cover-badge">صغار الصحابة</div>' + (s.source ? '<div class="source-line">' + s.source + '</div>' : '') + '</div>';
+        } else if (s.type === 'intro') {
+          h += '<div class="night-wrap"><div style="font-size:clamp(42px,10vw,64px);margin-bottom:6px">' + emojisHtml(s.emojis) + '</div>';
+          for (var li = 0; li < s.lines.length; li++) {
+            if (li > 0) h += '<div style="height:5px"></div>';
+            h += '<div class="cover-ar-sub" style="font-size:clamp(17px,3.2vw,24px);color:#FFF8E7">' + s.lines[li].ar + '</div><div class="cover-en-title" style="font-size:clamp(13px,2.2vw,16px)">' + s.lines[li].en + '</div>';
+          }
+          if (s.source) h += '<div class="source-line">' + s.source + '</div>'; h += '</div>';
+        } else if (s.type === 'scene') {
+          h += '<div class="img-card">' + (s.svg ? sceneSvg(s.svg) : '<div style="font-size:clamp(32px,8vw,56px)">' + emojisHtml(s.emojis || ['🏜']) + '</div>') + '<div class="scene-num">' + arabicNum(i - 2) + '</div></div>';
+          h += '<div class="caption-card"><div class="caption-inner"><div class="text-ar">' + s.ar + '</div><div class="divider"></div><div class="text-en">' + s.en + '</div></div></div>';
+        } else if (s.type === 'morals') {
+          h += '<div class="night-wrap"><div style="font-size:clamp(36px,8vw,50px);margin-bottom:4px">' + emojisHtml(s.emojis) + '</div><div class="moral-title">الدروس المستفادة</div>';
+          for (var mi = 0; mi < s.items.length; mi++) {
+            h += '<div class="moral-item"><div class="moral-num">' + arabicNum(mi + 1) + '</div><div class="moral-text"><div class="text-ar">' + s.items[mi].ar + '</div><div class="text-en">' + s.items[mi].en + '</div></div></div>';
+          }
+          if (s.source) h += '<div class="source-line">' + s.source + '</div>'; h += '</div>';
+        } else if (s.type === 'closing') {
+          h += '<div class="night-wrap"><div class="closing-icon">' + s.emojis[0] + '</div><div class="closing-ar">' + s.ar + '</div><div class="closing-en">' + s.en + '</div><a class="home-btn" href="./index.html">← العودة إلى القصص</a>' + (s.source ? '<div class="source-line">' + s.source + '</div>' : '') + '</div>';
+        }
+        return h;
+      }
+
+      function show(i) {
+        var w = document.createElement('div'); w.className = 'slide'; w.innerHTML = renderSlide(i);
+        stage.innerHTML = ''; stage.appendChild(w);
+        requestAnimationFrame(function () { requestAnimationFrame(function () { w.classList.add('active'); }); });
+        updateChrome(i);
+      }
+      function updateChrome(i) {
+        counterChip.textContent = arabicNum(i + 1) + ' / ' + arabicNum(total);
+        var dots = progressBar.children;
+        for (var d = 0; d < dots.length; d++) { dots[d].className = 'dot'; if (d < i) dots[d].classList.add('done'); if (d === i) dots[d].classList.add('active'); }
+        prevBtn.disabled = i === 0; nextBtn.disabled = i === total - 1;
+      }
+      function buildDots() {
+        progressBar.innerHTML = '';
+        for (var i = 0; i < total; i++) { var d = document.createElement('div'); d.className = 'dot'; progressBar.appendChild(d); }
+      }
+
+      function goHome() { stopSpeech(); window.location.href = './index.html'; }
+      function goTo(i) {
+        if (i < 0 || i >= total) return;
+        current = i; show(current);
+        if (autoPlay) { stopSpeech(); queueNarration(current); } else { stopSpeech(); }
+        updatePlayBtn();
+      }
+      function prevSlide() { if (autoPlay) stopSpeech(); goTo(current - 1); }
+      function nextSlide() { if (autoPlay) stopSpeech(); goTo(current + 1); }
+
+      function togglePlay() {
+        if (autoPlay) { autoPlay = false; speaking = false; stopSpeech(); updatePlayBtn(); }
+        else {
+          if (current === total - 1) goTo(0);
+          autoPlay = true; updatePlayBtn(); queueNarration(current);
+        }
+      }
+      function toggleLang() {
+        appLang = appLang === 'ar' ? 'en' : 'ar';
+        var wrap = document.getElementById('appWrap');
+        wrap.classList.remove('lang-ar', 'lang-en');
+        wrap.classList.add('lang-' + appLang);
+        langChip.textContent = appLang === 'ar' ? '🇸🇦 عربي' : '🇬🇧 English';
+      }
+
+      function updatePlayBtn() {
+        playBtn.textContent = autoPlay ? '⏸' : '▶';
+        playBtn.setAttribute('aria-label', autoPlay ? 'إيقاف مؤقت' : 'تشغيل');
+      }
+
+      function initStars() {
+        var c = document.getElementById('stars-canvas'), cx = c.getContext('2d');
+        if (!cx) return function () {};
+        var stars = [], W, H, dpr = window.devicePixelRatio || 1;
+        function resize() { W = window.innerWidth; H = window.innerHeight; c.width = W * dpr; c.height = H * dpr; c.style.width = W + 'px'; c.style.height = H + 'px'; cx.scale(dpr, dpr); }
+        window.addEventListener('resize', resize); resize();
+        var cnt = Math.min(150, Math.floor((W * H) / 6000));
+        for (var i = 0; i < cnt; i++) { stars.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.4 + 0.3, a: Math.random() * 0.5 + 0.3, s: Math.random() * 0.005 + 0.002 }); }
+        var aid;
+        function draw() {
+          cx.clearRect(0, 0, W, H); var n = performance.now();
+          for (var i = 0; i < stars.length; i++) { var st = stars[i]; var al = st.a * (0.5 + 0.5 * Math.sin(n * st.s + i)); cx.beginPath(); cx.arc(st.x, st.y, st.r, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,228,160,' + al + ')'; cx.fill(); }
+          aid = requestAnimationFrame(draw);
+        }
+        draw(); return function () { cancelAnimationFrame(aid); };
+      }
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight') { e.preventDefault(); nextSlide(); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+        else if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); togglePlay(); }
+      });
+
+      (function () {
+        var sx = 0, sy = 0, el = document.getElementById('appWrap');
+        el.addEventListener('touchstart', function (e) { var t = e.changedTouches[0]; sx = t.screenX; sy = t.screenY; }, { passive: true });
+        el.addEventListener('touchend', function (e) { var t = e.changedTouches[0]; var dx = t.screenX - sx, dy = t.screenY - sy; if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 48) { if (dx < 0) nextSlide(); else prevSlide(); } }, { passive: true });
+      })();
+
+      function init() {
+        buildDots(); show(0); loadingMsg.classList.add('hidden');
+        initStars(); initTTS();
+        document.getElementById('appWrap').classList.add('lang-ar');
+        backBtn.addEventListener('click', goHome);
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+        playBtn.addEventListener('click', togglePlay);
+        speakBtn.addEventListener('click', function () { stopSpeech(); queueNarration(current); });
+        ttsChip.addEventListener('click', function () { stopSpeech(); queueNarration(current); });
+        langChip.addEventListener('click', toggleLang);
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+    })();
+  </script>
+</body>
+</html>

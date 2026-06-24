@@ -192,19 +192,42 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--night); font
     radial-gradient(2px 2px at 45% 40%, #FFD700 100%, transparent);
   animation: twinkle 2.5s ease-in-out infinite alternate;
 }
-.slide-symbols .symbol-float {
-  position: absolute; font-size: clamp(40px, 10vw, 70px);
-  opacity: .2; animation: float-symbol 6s ease-in-out infinite;
-  pointer-events: none;
+/* character grid on slide 3 */
+.intro-chars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(6px, 1.4vw, 10px);
+  max-width: 480px; margin: 0 auto;
+  padding: 0 8px;
 }
-.symbol-float:nth-child(1) { top: 12%; left: 10%; animation-delay: 0s; }
-.symbol-float:nth-child(2) { top: 18%; right: 12%; animation-delay: 1.5s; }
-.symbol-float:nth-child(3) { bottom: 25%; left: 8%; animation-delay: 3s; }
-.symbol-float:nth-child(4) { bottom: 20%; right: 10%; animation-delay: 0.8s; }
-.symbol-float:nth-child(5) { top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: clamp(70px, 18vw, 120px); opacity: .08; animation-delay: 2s; }
-@keyframes float-symbol {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-18px) rotate(8deg); }
+.intro-char-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 12px;
+  padding: clamp(6px, 1.2vw, 10px) clamp(4px, 0.8vw, 8px);
+  transition: border-color 0.3s, background 0.3s, transform 0.3s;
+  min-height: clamp(60px, 12vw, 82px);
+}
+.intro-char-item .char-icon {
+  font-size: clamp(20px, 4.8vw, 32px);
+  line-height: 1;
+}
+.intro-char-item .char-name {
+  color: #FFE4A0;
+  font-weight: 700;
+  font-size: clamp(9px, 2vw, 13px);
+  line-height: 1.3;
+  margin-top: 3px;
+  text-align: center;
+}
+.intro-char-item .char-name .en {
+  display: block;
+  font-family: 'Lora', serif;
+  font-style: italic; font-weight: 400;
+  color: rgba(255,215,0,0.5);
+  font-size: clamp(7px, 1.4vw, 10px);
+  margin-top: 1px;
 }
 
 /* ---- CONTENT ---- */
@@ -378,18 +401,14 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--night); font
     </div>
   </div>
 
-  <!-- SLIDE 3: Teaser for Heroes -->
+  <!-- SLIDE 3: Teaser for Heroes — character grid -->
   <div class="intro-slide slide-symbols" id="introSlide2">
-    <span class="symbol-float">⚔</span>
-    <span class="symbol-float">✍</span>
-    <span class="symbol-float">💧</span>
-    <span class="symbol-float">📦</span>
-    <span class="symbol-float">🌟</span>
     <div class="intro-content">
-      <div class="intro-text-main">
-        هَيَّا بِنَا نُسَافِرُ عَبْرَ الزَّمَنِ..<br>لِنَعِيشَ مَعَ النَّمَاذِجِ<br>الحَقِيقِيَّةِ لِلأَبْطَال!
-        <span class="en">Let us travel through time..<br>to live with the real role models<br>of heroes!</span>
+      <div class="intro-text-main" style="margin-bottom:8px;">
+        هَيَّا بِنَا نُسَافِرُ عَبْرَ الزَّمَنِ..<br>لِنَعِيشَ مَعَ النَّمَاذِجِ الحَقِيقِيَّةِ لِلأَبْطَال!
+        <span class="en">Let us travel through time..<br>to meet the real role models of heroes!</span>
       </div>
+      <div class="intro-chars" id="introChars"></div>
     </div>
   </div>
 
@@ -489,11 +508,25 @@ introCloseBtn = document.getElementById('introCloseBtn');
 var ttsAvail = ('speechSynthesis' in window);
 function ttsCancel() { if (ttsAvail) speechSynthesis.cancel(); }
 
+function renderIntroChars() {
+  var container = document.getElementById('introChars');
+  if (!container || container.children.length > 0) return;
+  var names = ['معاذ ومعوذ','أسامة بن زيد','عمير بن أبي وقاص','رافع وسمرة','زيد بن ثابت','عبد الله بن عمر','عبد الله بن عباس','أنس بن مالك','الحسن والحسين'];
+  var namesEn = ["Mu'adh & Mu'awwidh","Usama ibn Zayd","Umayr ibn Abi Waqqas","Rafi' & Samura","Zayd ibn Thabit","Abdullah ibn Umar","Abdullah ibn Abbas","Anas ibn Malik","Al-Hasan & Al-Hussein"];
+  for (var i = 0; i < 9; i++) {
+    var item = document.createElement('div');
+    item.className = 'intro-char-item';
+    item.innerHTML = '<div class="char-icon">' + STORIES[i+1].icon + '</div><div class="char-name">' + names[i] + '<span class="en">' + namesEn[i] + '</span></div>';
+    container.appendChild(item);
+  }
+}
+
 function initIntroNav() {
   for (var i = 0; i < 3; i++) {
     introSlides[i] = document.getElementById('introSlide' + i);
     introDots[i] = document.querySelectorAll('.intro-dot')[i];
   }
+  renderIntroChars();
   introStep = 0;
   introBusy = false;
   introCloseBtn.classList.remove('show');

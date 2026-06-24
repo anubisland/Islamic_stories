@@ -95,7 +95,12 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--night); font
 .intro-title .en { display: block; font-family: 'Lora', serif; font-style: italic; font-weight: 400; color: var(--gold-light); font-size: clamp(13px, 3vw, 17px); margin-top: 4px; }
 .intro-text { color: var(--cream); font-size: clamp(15px, 3.6vw, 19px); line-height: 1.7; margin-bottom: 20px; }
 .intro-text .en { display: block; font-family: 'Lora', serif; font-style: italic; color: rgba(255,228,160,.7); font-size: clamp(12px, 2.6vw, 15px); margin-top: 8px; }
-.intro-list { text-align: right; color: #FFD700; font-size: clamp(14px, 3.2vw, 17px); line-height: 1.9; font-weight: 600; max-width: 400px; margin: 0 auto 16px; }
+.intro-list { text-align: right; color: #FFD700; font-size: clamp(14px, 3.2vw, 17px); line-height: 1.9; font-weight: 600; max-width: 420px; margin: 0 auto 16px; }
+.intro-list .en { display: block; font-family: 'Lora', serif; font-style: italic; font-weight: 400; color: rgba(255,228,160,.6); font-size: clamp(11px, 2.4vw, 14px); line-height: 1.4; }
+.intro-sound-btn { background: rgba(255,215,0,0.12); border: 1px solid #FFD700; border-radius: 30px; padding: 8px 24px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: 700; font-size: clamp(13px, 3vw, 16px); color: #FFE4A0; transition: background 0.2s; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; display: inline-block; margin: 0 auto; }
+.intro-sound-btn:hover { background: rgba(255,215,0,0.25); }
+.intro-sound-btn:active { transform: scale(0.95); }
+.intro-sound-btn .en { display: block; font-family: 'Lora', serif; font-style: italic; font-weight: 400; font-size: clamp(10px, 2vw, 12px); opacity: .7; }
 
 /* coming soon overlay */
 #coming-overlay {
@@ -155,15 +160,16 @@ html, body { margin: 0; padding: 0; height: 100%; background: var(--night); font
   <div class="intro-scroll">
     <div class="intro-title">سِلْسِلَةُ صِغَارِ الصَّحَابَةِ<br><span class="en">Little Companions Series</span></div>
     <div class="intro-text">فِي عَهْدِ النَّبِيِّ ﷺ، كَانَ هُنَاكَ صِغَارٌ فِي السِّنِّ، عَمَالِقَةٌ فِي الْهِمَّةِ! هَذِهِ الْقِصَصُ الْمُشَوِّقَةُ تَرْوِي حَيَاةَ أَصْحَابِ النَّبِيِّ ﷺ الصِّغَارِ الَّذِينَ صَنَعُوا الْفَرْقَ فِي الْإِسْلَامِ.<br><span class="en">In the time of the Prophet ﷺ, there were young ones small in age but great in determination! These exciting stories tell the lives of the young Companions who made a difference in Islam.</span></div>
-    <div class="intro-list">⚔ معَاذٌ وَمُعَوِّذٌ — أَوَّلُ الشُّهَدَاءِ فِي الْإِسْلَامِ<br>
-🏹 أُسَامَةُ بْنُ زَيْدٍ — أَمِيرُ الشَّبَانِ<br>
-🤲 عُمَيْرُ بْنُ أَبِي وَقَّاصٍ — شَوْقُ الْجِهَادِ<br>
-💪 رَافِعٌ وَسَمُرَةُ — الْمُصَارِعَانِ الْبَطَلَانِ<br>
-✍ زَيْدُ بْنُ ثَابِتٍ — جَامِعُ الْقُرْآنِ<br>
-🌙 عَبْدُ اللَّهِ بْنُ عُمَرَ — صَاحِبُ اللَّيْلِ<br>
-📖 عَبْدُ اللَّهِ بْنُ عَبَّاسٍ — بَحْرُ الْعِلْمِ<br>
-🤲 أَنَسُ بْنُ مَالِكٍ — حَافِظُ السِّرِّ<br>
-🌿 الْحَسَنُ وَالْحُسَيْنُ — سَيِّدَا شَبَابِ أَهْلِ الْجَنَّةِ</div>
+    <div class="intro-list">⚔ معَاذٌ وَمُعَوِّذٌ — أَوَّلُ الشُّهَدَاءِ فِي الْإِسْلَامِ <span class="en">Mu'adh & Mu'awwidh — First Martyrs</span><br>
+🏹 أُسَامَةُ بْنُ زَيْدٍ — أَمِيرُ الشَّبَانِ <span class="en">Usama ibn Zayd — Young Commander</span><br>
+🤲 عُمَيْرُ بْنُ أَبِي وَقَّاصٍ — شَوْقُ الْجِهَادِ <span class="en">Umayr — Longing for Jihad</span><br>
+💪 رَافِعٌ وَسَمُرَةُ — الْمُصَارِعَانِ الْبَطَلَانِ <span class="en">Rafi' & Samura — Brave Wrestlers</span><br>
+✍ زَيْدُ بْنُ ثَابِتٍ — جَامِعُ الْقُرْآنِ <span class="en">Zayd ibn Thabit — Quran Compiler</span><br>
+🌙 عَبْدُ اللَّهِ بْنُ عُمَرَ — صَاحِبُ اللَّيْلِ <span class="en">Abdullah ibn Umar — Night Prayer</span><br>
+📖 عَبْدُ اللَّهِ بْنُ عَبَّاسٍ — بَحْرُ الْعِلْمِ <span class="en">Abdullah ibn Abbas — Ocean of Knowledge</span><br>
+🤲 أَنَسُ بْنُ مَالِكٍ — حَافِظُ السِّرِّ <span class="en">Anas ibn Malik — Keeper of Secrets</span><br>
+🌿 الْحَسَنُ وَالْحُسَيْنُ — سَيِّدَا شَبَابِ أَهْلِ الْجَنَّةِ <span class="en">Al-Hasan & Al-Hussein — Masters of Paradise's Youth</span></div>
+  <button class="intro-sound-btn" id="introSoundBtn" onclick="playIntroSound()">🔊 استمع للمقدمة <span class="en">Listen to Intro</span></button>
   </div>
   <button class="close-btn" onclick="closeComing()">عَرَفْتُ! ✨</button>
 </div>
@@ -217,7 +223,7 @@ function renderCards() {
       <div class="card-info">
         <div class="card-name">${s.title}<span class="en">${s.titleEn}</span></div>
         <div class="card-meta">
-          <span class="card-tag">${s.age}</span>
+          ${s.age ? '<span class="card-tag">' + s.age + '</span>' : ''}
           <span class="card-tag">✦ <span>${s.themeEn}</span></span>
         </div>
       </div>
@@ -241,6 +247,20 @@ function openCard(idx) {
 function closeComing() {
   comingOverlay.classList.remove('active');
   introOverlay.classList.remove('active');
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+
+function playIntroSound() {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  var text = 'سِلْسِلَةُ صِغَارِ الصَّحَابَةِ. فِي عَهْدِ النَّبِيِّ ﷺ، كَانَ هُنَاكَ صِغَارٌ فِي السِّنِّ، عَمَالِقَةٌ فِي الْهِمَّةِ! هَذِهِ الْقِصَصُ الْمُشَوِّقَةُ تَرْوِي حَيَاةَ أَصْحَابِ النَّبِيِّ ﷺ الصِّغَارِ الَّذِينَ صَنَعُوا الْفَرْقَ فِي الْإِسْلَامِ.';
+  var v = speechSynthesis.getVoices();
+  var ar = v.find(function(x) { return /^ar/i.test(x.lang); }) || null;
+  var u = new SpeechSynthesisUtterance(text);
+  u.lang = ar ? ar.lang : 'ar';
+  u.rate = 0.85;
+  if (ar) u.voice = ar;
+  try { speechSynthesis.speak(u); } catch(e) {}
 }
 
 // PWA

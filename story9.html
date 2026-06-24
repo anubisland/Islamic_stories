@@ -25,10 +25,7 @@
     .top-bar .tts-chip:hover { border-color: #FFD700; }
     .top-bar .tts-chip.speaking { animation: chipPulse 0.8s ease-in-out infinite alternate; }
     @keyframes chipPulse { 0% { border-color: rgba(255,215,0,0.3); } 100% { border-color: #FFD700; box-shadow: 0 0 8px rgba(255,215,0,0.3); } }
-    .top-bar .lang-chip { font-size: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 1px 8px; cursor: pointer; user-select: none; white-space: nowrap; color: #FFE4A0; -webkit-tap-highlight-color: transparent; transition: border-color 0.2s; touch-action: manipulation; }
-    .top-bar .lang-chip:hover { border-color: #FFD700; }
-    .app-wrap.lang-en .text-ar { display: none; }
-    .app-wrap.lang-ar .text-en { display: none; }
+
     #stage { position: relative; flex: 1; min-height: 0; overflow: hidden; }
     .slide { position: absolute; inset: 0; display: flex; flex-direction: column; opacity: 0; pointer-events: none; transition: opacity 0.4s ease; overflow: hidden; }
     .slide.active { opacity: 1; pointer-events: auto; z-index: 5; }
@@ -86,7 +83,6 @@
       <span class="series-badge">🌿 الحسن والحسين</span>
       <span class="counter-chip" id="counterChip">١ / ١١</span>
       <span class="tts-chip" id="ttsChip" role="button" tabindex="0">⏳ صوت</span>
-      <span class="lang-chip" id="langChip" role="button" tabindex="0">🇸🇦 عربي</span>
     </div>
     <div id="stage"></div>
     <div class="progress-bar" id="progressBar"></div>
@@ -156,12 +152,10 @@ window.sceneTarget=function(){return svg('<rect width="400" height="110" fill="u
       var playBtn = document.getElementById('playBtn');
       var speakBtn = document.getElementById('speakBtn');
       var ttsChip = document.getElementById('ttsChip');
-      var langChip = document.getElementById('langChip');
       var backBtn = document.getElementById('backBtn');
 
       var current = 0, autoPlay = false, speaking = false, playGen = 0;
       var ttsAvail = false, arVoice = null, voiceDone = false;
-      var appLang = 'ar';
 
       function arabicNum(n) {
         var d = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
@@ -310,14 +304,6 @@ window.sceneTarget=function(){return svg('<rect width="400" height="110" fill="u
           autoPlay = true; updatePlayBtn(); queueNarration(current);
         }
       }
-      function toggleLang() {
-        appLang = appLang === 'ar' ? 'en' : 'ar';
-        var wrap = document.getElementById('appWrap');
-        wrap.classList.remove('lang-ar', 'lang-en');
-        wrap.classList.add('lang-' + appLang);
-        langChip.textContent = appLang === 'ar' ? '🇸🇦 عربي' : '🇬🇧 English';
-      }
-
       function updatePlayBtn() {
         playBtn.textContent = autoPlay ? '⏸' : '▶';
         playBtn.setAttribute('aria-label', autoPlay ? 'إيقاف مؤقت' : 'تشغيل');
@@ -355,14 +341,12 @@ window.sceneTarget=function(){return svg('<rect width="400" height="110" fill="u
       function init() {
         buildDots(); show(0); loadingMsg.classList.add('hidden');
         initStars(); initTTS();
-        document.getElementById('appWrap').classList.add('lang-ar');
         backBtn.addEventListener('click', goHome);
         prevBtn.addEventListener('click', prevSlide);
         nextBtn.addEventListener('click', nextSlide);
         playBtn.addEventListener('click', togglePlay);
         speakBtn.addEventListener('click', function () { stopSpeech(); queueNarration(current); });
         ttsChip.addEventListener('click', function () { stopSpeech(); queueNarration(current); });
-        langChip.addEventListener('click', toggleLang);
       }
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
     })();

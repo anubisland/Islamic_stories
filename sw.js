@@ -4,7 +4,7 @@
 // back to the cached copy if the network is unavailable. This guarantees
 // that every update pushed to the site is picked up immediately on the next
 // load with internet access, while still preserving full offline support.
-const CACHE_NAME = "sighar-sahaba-v6";
+const CACHE_NAME = "sighar-sahaba-v8";
 const ASSETS = [
   "./",
   "./index.html",
@@ -19,6 +19,7 @@ const ASSETS = [
   "./story9.html",
   "./manifest.json",
   "./scenes-svg.js",
+  "./narrator.js",
   "./icon-192.png",
   "./icon-512.png",
   "./icon-maskable-512.png"
@@ -40,7 +41,9 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  const isDocument = event.request.mode === "navigate" || event.request.destination === "document";
+  // Scripts are network-first too, so a page never runs against a stale narrator.js.
+  const isDocument = event.request.mode === "navigate" || event.request.destination === "document" ||
+    event.request.destination === "script";
 
   if (isDocument) {
     // Network-first: always try to get the freshest page when online.
@@ -58,12 +61,13 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Other static assets (manifest, icons): cache-first is fine, they rarely change.
+  // Other static assets (manifest, icons, narration MP3s): cache-first is fine,
+  // they rarely change. Only full 200 responses are cached (audio range requests return 206).
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
       return fetch(event.request).then((response) => {
-        if (event.request.method === "GET" && response.ok) {
+        if (event.request.method === "GET" && response.status === 200) {
           const copy = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
         }

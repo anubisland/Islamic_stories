@@ -71,6 +71,7 @@
     .loading-msg { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #0D1B3E; color: #FFD700; font-size: 20px; z-index: 99; font-family: 'Cairo', sans-serif; }
     .loading-msg.hidden { display: none; }
   </style>
+  <script src="./narrator.js"></script>
 </head>
 <body>
   <div class="loading-msg" id="loadingMsg">جاري التحميل…</div>
@@ -175,6 +176,7 @@
     (function () {
       'use strict';
 
+      var STORY_ID = 'story1';
       var SLIDES = [
         { type: 'cover', title: 'مُعَاذٌ وَمُعَوِّذٌ', titleEn: "Mu'adh & Mu'awwidh", subtitle: 'بَطَلَا مَعْرَكَةِ بَدْرٍ', emojis: ['📜','🌟'], source: 'صَحِيحُ البُخَارِيِّ وَمُسْلِمَ' },
         { type: 'intro', emojis: ['⚔'], lines: [
@@ -240,12 +242,12 @@
         if (v.length > 0 && !voiceDone) {
           voiceDone = true; ttsAvail = true;
           arVoice = v.find(function (x) { return /^ar/i.test(x.lang); });
-          ttsChip.textContent = arVoice ? '🔊 صوت عربي' : '🔉 ' + v.length + ' صوت';
+          ttsChip.textContent = narrationLangLabel();
           window.speechSynthesis.cancel();
         }
       }
       function stopSpeech() {
-        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        if (narrator) narrator.stop(); else if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         speaking = false; ttsChip.classList.remove('speaking');
       }
       function getNarration(i) {
@@ -258,22 +260,23 @@
         return '';
       }
 
+      function getNarrationEn(i) {
+        var s = SLIDES[i];
+        if (s.type === 'cover') return s.titleEn;
+        if (s.type === 'intro') return s.lines.map(function (l) { return l.en; }).join(' ');
+        if (s.type === 'scene' || s.type === 'closing') return s.en;
+        if (s.type === 'morals') return s.items.map(function (m) { return m.en; }).join(' ');
+        return '';
+      }
+
+      var narrator = null;
       function queueNarration(from) {
-        if (!('speechSynthesis' in window)) return;
-        stopSpeech();
-        playGen++; var mg = playGen;
-        if (!voiceDone) { var v = window.speechSynthesis.getVoices(); if (v.length > 0) { voiceDone = true; ttsAvail = true; arVoice = v.find(function (x) { return /^ar/i.test(x.lang); }); } }
-        if (!ttsAvail) return;
-        var av = arVoice;
-        for (var i = from; i < total; i++) {
-          var t = getNarration(i); if (!t) continue;
-          var u = new SpeechSynthesisUtterance(t);
-          u.lang = av ? av.lang : 'ar'; u.rate = 0.85; if (av) u.voice = av;
-          u.onstart = (function (si) { return function () { if (mg !== playGen) return; speaking = true; ttsChip.classList.add('speaking'); if (current !== si) { current = si; show(current); } }; })(i);
-          u.onerror = (function (si) { return function () { if (mg !== playGen) return; if (si === current) speaking = false; ttsChip.classList.remove('speaking'); }; })(i);
-          if (i === total - 1) { u.onend = (function () { return function () { if (mg !== playGen) return; speaking = false; ttsChip.classList.remove('speaking'); autoPlay = false; updatePlayBtn(); }; })(); }
-          try { window.speechSynthesis.speak(u); } catch (e) {}
-        }
+        if (!narrator) narrator = createNarrator({
+          story: STORY_ID, total: total, arText: getNarration, enText: getNarrationEn,
+          onSlide: function (si) { speaking = true; ttsChip.classList.add('speaking'); if (current !== si) { current = si; show(current); } },
+          onEnd: function () { speaking = false; ttsChip.classList.remove('speaking'); autoPlay = false; updatePlayBtn(); }
+        });
+        narrator.play(from);
       }
 
       function sceneSvg(type) {
@@ -404,7 +407,7 @@
         nextBtn.addEventListener('click', nextSlide);
         playBtn.addEventListener('click', togglePlay);
         speakBtn.addEventListener('click', function () { stopSpeech(); queueNarration(current); });
-        ttsChip.addEventListener('click', function () { stopSpeech(); queueNarration(current); });
+        ttsChip.addEventListener('click', function () { toggleNarrationLang(); ttsChip.textContent = narrationLangLabel(); stopSpeech(); if (autoPlay) queueNarration(current); });
       }
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
     })();
